@@ -23,10 +23,15 @@ if os.getenv("RENDER"):
         "https://rosewood-rivalry.onrender.com"
     ])
 
+# Also check for any .onrender.com domain (more flexible)
+frontend_url = os.getenv("FRONTEND_URL")
+if frontend_url:
+    origins.append(frontend_url)
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],  # Temporarily allow all origins for testing
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
