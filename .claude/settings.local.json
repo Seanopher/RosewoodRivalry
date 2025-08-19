@@ -2,7 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(npm start)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(ngrok version)",
+      "Bash(choco:*)",
+      "Bash(uvicorn:*)"
     ],
     "deny": [],
     "ask": []

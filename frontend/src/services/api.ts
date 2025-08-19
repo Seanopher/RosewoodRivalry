@@ -1,10 +1,23 @@
 import axios from 'axios';
 import { Player, PlayerCreate, Game, GameCreate, GameSummary, PlayerStats } from '../types';
 
-// Use localhost for development, but allow override for mobile
-const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'http://localhost:8000'
-  : `http://${window.location.hostname}:8000`;
+// API URL configuration for different environments
+const getApiBaseUrl = () => {
+  // Production environment - use environment variable
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  
+  // Development - use localhost
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return 'http://localhost:8000';
+  }
+  
+  // Fallback for local network access
+  return `http://${window.location.hostname}:8000`;
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 console.log('API Configuration:', {
   hostname: window.location.hostname,

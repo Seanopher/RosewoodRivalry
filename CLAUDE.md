@@ -8,7 +8,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 # Start the FastAPI server
 cd backend
-uvicorn app.main:app --reload
+python -m uvicorn app.main:app --reload
+
+# Start the React frontend (in separate terminal)
+cd frontend
+npm start
 
 # Initialize the database (creates tables)
 cd backend
@@ -25,6 +29,45 @@ python init_db.py
 ```bash
 # Install Python dependencies (from root directory)
 pip install -r requirements.txt
+```
+
+### Process Management (Windows)
+```bash
+# Find processes using a specific port
+netstat -ano | findstr :3000
+
+# Kill process by PID (use double slashes for Windows)
+taskkill //PID <process_id> //F
+
+# Example: Kill process using port 3000
+# First find PID: netstat -ano | findstr :3000
+# Then kill: taskkill //PID <found_pid> //F
+```
+
+## Deployment
+
+### Hosting Setup
+- **Platform**: Render.com (free tier)
+- **Backend**: Web Service with Docker
+- **Frontend**: Static Site
+- **Database**: Neon PostgreSQL (free tier)
+
+### Deploy to Render
+1. Connect GitHub repository to Render
+2. Create PostgreSQL database on Neon.tech
+3. Set environment variables in Render dashboard:
+   - `DATABASE_URL`: Connection string from Neon
+   - `REACT_APP_API_URL`: Backend service URL
+4. Deploy using `render.yaml` configuration
+
+### Files for Deployment
+- `backend/Dockerfile`: Docker configuration for FastAPI
+- `render.yaml`: Render service configuration
+- Environment variables handled automatically
+
+### Production URLs
+- Backend API: `https://rosewood-rivalry-backend.onrender.com`
+- Frontend: `https://rosewood-rivalry-frontend.onrender.com`
 ```
 
 ## Architecture Overview
