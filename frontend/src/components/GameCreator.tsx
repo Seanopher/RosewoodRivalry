@@ -17,8 +17,8 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
   const [team2Player2, setTeam2Player2] = useState<number | null>(null);
   const [team2Player3, setTeam2Player3] = useState<number | null>(null);
   
-  const [team1Score, setTeam1Score] = useState<number>(0);
-  const [team2Score, setTeam2Score] = useState<number>(0);
+  const [team1Score, setTeam1Score] = useState<string>('');
+  const [team2Score, setTeam2Score] = useState<string>('');
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -55,8 +55,16 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
       return;
     }
 
-    if (team1Score < 0 || team2Score < 0) {
+    const team1ScoreNum = parseInt(team1Score) || 0;
+    const team2ScoreNum = parseInt(team2Score) || 0;
+
+    if (team1ScoreNum < 0 || team2ScoreNum < 0) {
       setError('Scores cannot be negative');
+      return;
+    }
+
+    if (team1Score === '' || team2Score === '') {
+      setError('Please enter scores for both teams');
       return;
     }
 
@@ -65,8 +73,8 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
       setError(null);
       
       const gameData: GameCreate = {
-        team1_score: team1Score,
-        team2_score: team2Score,
+        team1_score: team1ScoreNum,
+        team2_score: team2ScoreNum,
         team1_players: team1Players,
         team2_players: team2Players,
       };
@@ -81,8 +89,8 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
       setTeam2Player1(null);
       setTeam2Player2(null);
       setTeam2Player3(null);
-      setTeam1Score(0);
-      setTeam2Score(0);
+      setTeam1Score('');
+      setTeam2Score('');
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to create game');
     } finally {
@@ -287,7 +295,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
                 type="number"
                 min="0"
                 value={team1Score}
-                onChange={(e) => setTeam1Score(parseInt(e.target.value) || 0)}
+                onChange={(e) => setTeam1Score(e.target.value)}
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 required
               />
@@ -300,7 +308,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
                 type="number"
                 min="0"
                 value={team2Score}
-                onChange={(e) => setTeam2Score(parseInt(e.target.value) || 0)}
+                onChange={(e) => setTeam2Score(e.target.value)}
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
                 required
               />
@@ -308,19 +316,19 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
           </div>
 
           {/* Winner Preview */}
-          {(team1Score > 0 || team2Score > 0) && (
+          {(team1Score !== '' || team2Score !== '') && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <div className="text-sm text-yellow-800">
                 <strong>Winner:</strong>{' '}
-                {team1Score > team2Score
+                {parseInt(team1Score) > parseInt(team2Score)
                   ? 'Team 1'
-                  : team2Score > team1Score
+                  : parseInt(team2Score) > parseInt(team1Score)
                   ? 'Team 2'
                   : 'Tie Game'
                 }
-                {team1Score !== team2Score && (
+                {parseInt(team1Score) !== parseInt(team2Score) && (
                   <span className="ml-2">
-                    (by {Math.abs(team1Score - team2Score)} points)
+                    (by {Math.abs(parseInt(team1Score) - parseInt(team2Score))} points)
                   </span>
                 )}
               </div>

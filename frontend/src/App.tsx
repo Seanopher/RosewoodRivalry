@@ -128,12 +128,12 @@ function App() {
           <div className="border-b border-gray-200">
             <nav className="-mb-px flex space-x-8">
               {[
-                { key: 'dashboard', label: 'Dashboard' },
-                { key: 'stats', label: 'Player Stats', count: players.length },
-                { key: 'history', label: 'Game History', count: games.length },
-                { key: 'newplayer', label: 'New Player' },
-                { key: 'game', label: 'New Game' },
-              ].map(({ key, label, count }) => (
+                { key: 'dashboard', label: '🏠 Home' },
+                { key: 'stats', label: '📊 Stats' },
+                { key: 'history', label: '📜 History' },
+                { key: 'game', label: '🎲 New Game' },
+                { key: 'newplayer', label: '🧑 New Player' },
+              ].map(({ key, label }) => (
                 <button
                   key={key}
                   onClick={() => setActiveTab(key as Tab)}
@@ -144,11 +144,6 @@ function App() {
                   } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
                 >
                   {label}
-                  {count !== undefined && (
-                    <span className="ml-2 bg-gray-100 text-gray-900 py-0.5 px-2.5 rounded-full text-xs">
-                      {count}
-                    </span>
-                  )}
                 </button>
               ))}
             </nav>
