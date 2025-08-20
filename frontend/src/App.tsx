@@ -107,8 +107,8 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="bg-white shadow-sm">
+    <div className="min-h-screen" style={{ backgroundColor: '#FFE6E6' }}>
+      <div className="shadow-sm" style={{ backgroundColor: '#FFB8B8' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center">
@@ -118,8 +118,8 @@ function App() {
                 className="h-8 w-auto"
               />
               <div className="ml-4">
-                <h1 className="text-2xl font-bold text-gray-900">Rosewood Rivalry</h1>
-                <span className="text-sm text-gray-500">Die Game Tracker</span>
+                <h1 className="text-2xl font-bold text-white leading-tight">Rosewood Rivalry</h1>
+                <span className="text-lg text-white">Die Game Tracker</span>
               </div>
             </div>
           </div>
@@ -139,9 +139,9 @@ function App() {
                   onClick={() => setActiveTab(key as Tab)}
                   className={`${
                     activeTab === key
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+                      ? 'bg-white text-black border-white'
+                      : 'bg-white text-black hover:bg-gray-100 border-transparent'
+                  } whitespace-nowrap py-4 px-3 border-b-2 font-medium text-sm flex items-center rounded-t-md`}
                 >
                   {label}
                 </button>

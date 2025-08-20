@@ -82,9 +82,10 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Dashboard</h2>
-        <p className="text-gray-600">Welcome to Rosewood Rivalry Game Tracker</p>
+      <div className="bg-white p-6 rounded-lg shadow text-center">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Dashboard </h2>
+        <p className="text-gray-600">Welcome to the Rosewood Rivalry Game Tracker! Keep track of games, player stats, and weekly highlights all in one place!
+        </p>
       </div>
 
       {/* Recent Games */}
