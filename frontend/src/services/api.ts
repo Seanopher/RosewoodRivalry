@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Player, PlayerCreate, Game, GameCreate, GameSummary, PlayerStats } from '../types';
+import { Player, PlayerCreate, Game, GameCreate, GameUpdate, GameSummary, PlayerStats } from '../types';
 
 // API URL configuration for different environments
 const getApiBaseUrl = () => {
@@ -106,6 +106,12 @@ export const gameAPI = {
     return response.data;
   },
 
+  // Update a game
+  updateGame: async (gameId: number, gameData: GameUpdate): Promise<Game> => {
+    const response = await api.put(`/games/${gameId}`, gameData);
+    return response.data;
+  },
+
   // Get all games (recent)
   getAllGames: async (limit?: number): Promise<GameSummary[]> => {
     const params = limit ? { limit } : {};
@@ -117,6 +123,11 @@ export const gameAPI = {
   getGame: async (gameId: number): Promise<Game> => {
     const response = await api.get(`/games/${gameId}`);
     return response.data;
+  },
+
+  // Delete a game
+  deleteGame: async (gameId: number): Promise<void> => {
+    await api.delete(`/games/${gameId}`);
   },
 };
 

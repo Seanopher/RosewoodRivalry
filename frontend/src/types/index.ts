@@ -33,6 +33,13 @@ export interface GameCreate {
   team2_players: number[];
 }
 
+export interface GameUpdate {
+  team1_score?: number;
+  team2_score?: number;
+  team1_players?: number[];
+  team2_players?: number[];
+}
+
 export interface GameSummary {
   id: number;
   team1_score: number;

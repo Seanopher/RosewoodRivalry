@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
-import { Player, GameCreate } from '../types';
+import React, { useState, useEffect } from 'react';
+import { Player, Game, GameUpdate } from '../types';
 import { gameAPI } from '../services/api';
 
-interface GameCreatorProps {
+interface EditGameProps {
+  gameId: number;
   players: Player[];
-  onGameCreated: (game: any) => void;
+  onGameUpdated: (game: Game) => void;
+  onGameDeleted: () => void;
+  onCancel: () => void;
 }
 
-const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => {
+const EditGame: React.FC<EditGameProps> = ({ gameId, players, onGameUpdated, onGameDeleted, onCancel }) => {
+  const [game, setGame] = useState<Game | null>(null);
+  const [loading, setLoading] = useState(true);
+  
   // Team roster spots (3 per team)
   const [team1Player1, setTeam1Player1] = useState<number | null>(null);
   const [team1Player2, setTeam1Player2] = useState<number | null>(null);
@@ -19,8 +25,44 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
   
   const [team1Score, setTeam1Score] = useState<number>(0);
   const [team2Score, setTeam2Score] = useState<number>(0);
-  const [isCreating, setIsCreating] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Load game data
+  useEffect(() => {
+    const loadGame = async () => {
+      try {
+        setLoading(true);
+        const gameData = await gameAPI.getGame(gameId);
+        setGame(gameData);
+        
+        // Set scores
+        setTeam1Score(gameData.team1_score);
+        setTeam2Score(gameData.team2_score);
+        
+        // Set team players
+        if (gameData.team1_players.length >= 3) {
+          setTeam1Player1(gameData.team1_players[0].id);
+          setTeam1Player2(gameData.team1_players[1].id);
+          setTeam1Player3(gameData.team1_players[2].id);
+        }
+        
+        if (gameData.team2_players.length >= 3) {
+          setTeam2Player1(gameData.team2_players[0].id);
+          setTeam2Player2(gameData.team2_players[1].id);
+          setTeam2Player3(gameData.team2_players[2].id);
+        }
+      } catch (err) {
+        setError('Failed to load game data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadGame();
+  }, [gameId]);
 
   // Get all selected players
   const getSelectedPlayers = () => {
@@ -36,7 +78,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
     );
   };
 
-  const handleCreateGame = async (e: React.FormEvent) => {
+  const handleUpdateGame = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const team1Players = [team1Player1, team1Player2, team1Player3].filter(id => id !== null) as number[];
@@ -61,32 +103,37 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
     }
 
     try {
-      setIsCreating(true);
+      setIsUpdating(true);
       setError(null);
       
-      const gameData: GameCreate = {
+      const updateData: GameUpdate = {
         team1_score: team1Score,
         team2_score: team2Score,
         team1_players: team1Players,
         team2_players: team2Players,
       };
       
-      const newGame = await gameAPI.createGame(gameData);
-      onGameCreated(newGame);
-      
-      // Reset form
-      setTeam1Player1(null);
-      setTeam1Player2(null);
-      setTeam1Player3(null);
-      setTeam2Player1(null);
-      setTeam2Player2(null);
-      setTeam2Player3(null);
-      setTeam1Score(0);
-      setTeam2Score(0);
+      const updatedGame = await gameAPI.updateGame(gameId, updateData);
+      onGameUpdated(updatedGame);
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to create game');
+      setError(err.response?.data?.detail || 'Failed to update game');
     } finally {
-      setIsCreating(false);
+      setIsUpdating(false);
+    }
+  };
+
+  const handleDeleteGame = async () => {
+    try {
+      setIsDeleting(true);
+      setError(null);
+      
+      await gameAPI.deleteGame(gameId);
+      onGameDeleted();
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Failed to delete game');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -95,17 +142,29 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
     return players.find(p => p.id === playerId)?.name || 'Unknown';
   };
 
-  const team1Players = [team1Player1, team1Player2, team1Player3].filter(id => id !== null);
-  const team2Players = [team2Player1, team2Player2, team2Player3].filter(id => id !== null);
-  const canCreateGame = team1Players.length === 3 && team2Players.length === 3 && !isCreating;
+  const team1PlayersSelected = [team1Player1, team1Player2, team1Player3].filter(id => id !== null);
+  const team2PlayersSelected = [team2Player1, team2Player2, team2Player3].filter(id => id !== null);
+  const canUpdateGame = team1PlayersSelected.length === 3 && team2PlayersSelected.length === 3 && !isUpdating;
 
-  if (players.length < 6) {
+  if (loading) {
     return (
       <div className="bg-white shadow rounded-lg p-6">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Create New Game</h2>
-        <div className="text-center text-gray-500 py-8">
-          <p className="text-lg">You need at least 6 players to create a game.</p>
-          <p className="text-sm mt-2">Go to the New Player tab to add more players.</p>
+        <div className="text-center">Loading game data...</div>
+      </div>
+    );
+  }
+
+  if (!game) {
+    return (
+      <div className="bg-white shadow rounded-lg p-6">
+        <div className="text-center text-red-600">Failed to load game data</div>
+        <div className="text-center mt-4">
+          <button
+            onClick={onCancel}
+            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+          >
+            Back to Games
+          </button>
         </div>
       </div>
     );
@@ -114,9 +173,17 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
   return (
     <div className="space-y-6">
       <div className="bg-white shadow rounded-lg p-6">
-        <h2 className="text-lg font-medium text-gray-900 mb-6">Create New Game</h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-lg font-medium text-gray-900">Edit Game #{game.id}</h2>
+          <button
+            onClick={onCancel}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            ✕ Cancel
+          </button>
+        </div>
         
-        <form onSubmit={handleCreateGame} className="space-y-6">
+        <form onSubmit={handleUpdateGame} className="space-y-6">
           {/* Team Selection */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Team 1 */}
@@ -181,7 +248,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
               </div>
 
               <div className="text-sm text-gray-500">
-                Selected: {team1Players.length}/3 players
+                Selected: {team1PlayersSelected.length}/3 players
               </div>
             </div>
 
@@ -247,35 +314,10 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
               </div>
 
               <div className="text-sm text-gray-500">
-                Selected: {team2Players.length}/3 players
+                Selected: {team2PlayersSelected.length}/3 players
               </div>
             </div>
           </div>
-
-          {/* Selected Teams Summary */}
-          {(team1Players.length > 0 || team2Players.length > 0) && (
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h4 className="font-medium text-gray-900 mb-3">Current Teams</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-blue-600 font-medium">Team 1:</span>
-                  <ul className="mt-1 space-y-1">
-                    {team1Players.map(id => (
-                      <li key={id} className="text-gray-700">• {getPlayerName(id)}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <span className="text-red-600 font-medium">Team 2:</span>
-                  <ul className="mt-1 space-y-1">
-                    {team2Players.map(id => (
-                      <li key={id} className="text-gray-700">• {getPlayerName(id)}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Scores */}
           <div className="grid grid-cols-2 gap-4">
@@ -333,17 +375,66 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={!canCreateGame}
-            className="w-full bg-green-600 text-white py-3 px-4 rounded-md font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {isCreating ? 'Creating Game...' : 'Create Game'}
-          </button>
+          <div className="space-y-4">
+            <div className="flex gap-4">
+              <button
+                type="submit"
+                disabled={!canUpdateGame}
+                className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-md font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isUpdating ? 'Updating Game...' : 'Update Game'}
+              </button>
+              <button
+                type="button"
+                onClick={onCancel}
+                className="px-6 py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+            
+            {/* Delete Button */}
+            <div className="pt-4 border-t border-gray-200">
+              {!showDeleteConfirm ? (
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="w-full bg-red-600 text-white py-3 px-4 rounded-md font-medium hover:bg-red-700 transition-colors"
+                >
+                  Delete Game
+                </button>
+              ) : (
+                <div className="space-y-3">
+                  <div className="text-center text-red-800 bg-red-50 border border-red-200 rounded-lg p-3">
+                    <p className="font-medium">Are you sure you want to delete this game?</p>
+                    <p className="text-sm mt-1">This action cannot be undone and will update all player statistics.</p>
+                  </div>
+                  <div className="flex gap-4">
+                    <button
+                      type="button"
+                      onClick={handleDeleteGame}
+                      disabled={isDeleting}
+                      className="flex-1 bg-red-600 text-white py-2 px-4 rounded-md font-medium hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {isDeleting ? 'Deleting...' : 'Yes, Delete Game'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowDeleteConfirm(false)}
+                      disabled={isDeleting}
+                      className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-md font-medium hover:bg-gray-300 disabled:opacity-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </form>
       </div>
     </div>
   );
 };
 
-export default GameCreator;
+export default EditGame;

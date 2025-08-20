@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Player, GameSummary } from './types';
+import { Player, GameSummary, Game } from './types';
 import { playerAPI, gameAPI } from './services/api';
-import PlayerManager from './components/PlayerManager';
+import Dashboard from './components/Dashboard';
+import NewPlayer from './components/NewPlayer';
 import GameCreator from './components/GameCreator';
 import GameHistory from './components/GameHistory';
 import PlayerStats from './components/PlayerStats';
+import EditGame from './components/EditGame';
 
-type Tab = 'players' | 'game' | 'history' | 'stats';
+type Tab = 'dashboard' | 'stats' | 'history' | 'newplayer' | 'game' | 'edit';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<Tab>('players');
+  const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [players, setPlayers] = useState<Player[]>([]);
   const [games, setGames] = useState<GameSummary[]>([]);
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
+  const [editingGameId, setEditingGameId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,6 +54,32 @@ function App() {
   const handlePlayerSelect = (player: Player) => {
     setSelectedPlayer(player);
     setActiveTab('stats');
+  };
+
+  const handleEditGame = (gameId: number) => {
+    setEditingGameId(gameId);
+    setActiveTab('edit');
+  };
+
+  const handleGameUpdated = (updatedGame: Game) => {
+    // Reload data to get updated player stats and game list
+    loadData();
+    // Go back to game history
+    setEditingGameId(null);
+    setActiveTab('history');
+  };
+
+  const handleGameDeleted = () => {
+    // Reload data to get updated player stats and game list
+    loadData();
+    // Go back to game history
+    setEditingGameId(null);
+    setActiveTab('history');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingGameId(null);
+    setActiveTab('history');
   };
 
   if (loading) {
@@ -92,10 +121,11 @@ function App() {
           <div className="border-b border-gray-200">
             <nav className="-mb-px flex space-x-8">
               {[
-                { key: 'players', label: 'Players', count: players.length },
-                { key: 'game', label: 'New Game' },
+                { key: 'dashboard', label: 'Dashboard' },
+                { key: 'stats', label: 'Player Stats', count: players.length },
                 { key: 'history', label: 'Game History', count: games.length },
-                { key: 'stats', label: 'Player Stats' },
+                { key: 'newplayer', label: 'New Player' },
+                { key: 'game', label: 'New Game' },
               ].map(({ key, label, count }) => (
                 <button
                   key={key}
@@ -121,11 +151,31 @@ function App() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {activeTab === 'players' && (
-          <PlayerManager 
+        {activeTab === 'dashboard' && (
+          <Dashboard 
+            players={players}
+            games={games}
+          />
+        )}
+        
+        {activeTab === 'stats' && (
+          <PlayerStats 
             players={players} 
+            selectedPlayer={selectedPlayer}
+            onPlayerSelect={setSelectedPlayer}
+          />
+        )}
+        
+        {activeTab === 'history' && (
+          <GameHistory 
+            games={games} 
+            onEditGame={handleEditGame}
+          />
+        )}
+        
+        {activeTab === 'newplayer' && (
+          <NewPlayer 
             onPlayerCreated={handlePlayerCreated}
-            onPlayerSelect={handlePlayerSelect}
           />
         )}
         
@@ -136,15 +186,13 @@ function App() {
           />
         )}
         
-        {activeTab === 'history' && (
-          <GameHistory games={games} />
-        )}
-        
-        {activeTab === 'stats' && (
-          <PlayerStats 
-            players={players} 
-            selectedPlayer={selectedPlayer}
-            onPlayerSelect={setSelectedPlayer}
+        {activeTab === 'edit' && editingGameId && (
+          <EditGame 
+            gameId={editingGameId}
+            players={players}
+            onGameUpdated={handleGameUpdated}
+            onGameDeleted={handleGameDeleted}
+            onCancel={handleCancelEdit}
           />
         )}
       </div>

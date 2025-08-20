@@ -3,9 +3,10 @@ import { GameSummary } from '../types';
 
 interface GameHistoryProps {
   games: GameSummary[];
+  onEditGame?: (gameId: number) => void;
 }
 
-const GameHistory: React.FC<GameHistoryProps> = ({ games }) => {
+const GameHistory: React.FC<GameHistoryProps> = ({ games, onEditGame }) => {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -54,8 +55,19 @@ const GameHistory: React.FC<GameHistoryProps> = ({ games }) => {
               <div className="text-sm text-gray-500">
                 Game #{game.id} • {formatDate(game.played_at)}
               </div>
-              <div className={`text-sm font-medium ${getWinnerColor(game.winner_team)}`}>
-                Team {game.winner_team} Wins!
+              <div className="flex items-center gap-3">
+                <div className={`text-sm font-medium ${getWinnerColor(game.winner_team)}`}>
+                  Team {game.winner_team} Wins!
+                </div>
+                {onEditGame && (
+                  <button
+                    onClick={() => onEditGame(game.id)}
+                    className="text-blue-600 hover:text-blue-800 text-sm font-medium border border-blue-300 hover:border-blue-500 px-2 py-1 rounded transition-colors"
+                    title="Edit this game"
+                  >
+                    Edit
+                  </button>
+                )}
               </div>
             </div>
             

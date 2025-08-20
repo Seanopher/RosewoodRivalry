@@ -42,6 +42,21 @@ class GameCreate(BaseModel):
                 raise ValueError('Players cannot be on both teams')
         return v
 
+class GameUpdate(BaseModel):
+    team1_score: Optional[int] = Field(None, ge=0)
+    team2_score: Optional[int] = Field(None, ge=0)
+    team1_players: Optional[List[int]] = Field(None, min_items=3, max_items=3)
+    team2_players: Optional[List[int]] = Field(None, min_items=3, max_items=3)
+    
+    @validator('team2_players')
+    def validate_unique_players(cls, v, values):
+        if v is not None and 'team1_players' in values and values['team1_players'] is not None:
+            team1 = set(values['team1_players'])
+            team2 = set(v)
+            if team1.intersection(team2):
+                raise ValueError('Players cannot be on both teams')
+        return v
+
 class GameOut(BaseModel):
     id: int
     team1_score: int
