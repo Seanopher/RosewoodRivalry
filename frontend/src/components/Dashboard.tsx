@@ -27,37 +27,15 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
       : 0
   };
 
-  // Find players with highest win percentage (current winning streak approximation)
-  const topPlayers = [...players]
-    .filter(player => player.games_played > 0)
+  // Calculate total games played and find qualified players (33.3% participation)
+  const totalGames = games.length;
+  const minimumGamesRequired = Math.ceil(totalGames * 0.333); // 33.3% of total games
+  
+  // Find top 3 qualified players with highest win percentage
+  const qualifiedPlayers = [...players]
+    .filter(player => player.games_played >= minimumGamesRequired && player.games_played > 0)
     .sort((a, b) => b.win_percentage - a.win_percentage)
-    .slice(0, 10); // Get top 10 to find ties
-
-  // Group players by win percentage to show ties
-  // Handle both decimal (0.75) and percentage (75) formats from backend
-  const winPercentageGroups: { [key: number]: Player[] } = {};
-  topPlayers.forEach(player => {
-    let winRate = player.win_percentage;
-    // If win_percentage is greater than 1, it's already a percentage
-    if (winRate > 1) {
-      winRate = Math.round(winRate);
-    } else {
-      // If it's a decimal, convert to percentage
-      winRate = Math.round(winRate * 100);
-    }
-    
-    if (!winPercentageGroups[winRate]) {
-      winPercentageGroups[winRate] = [];
-    }
-    winPercentageGroups[winRate].push(player);
-  });
-
-  // Get the highest win percentage and all players with that percentage
-  const highestWinRate = topPlayers.length > 0 ? 
-    (topPlayers[0].win_percentage > 1 ? 
-      Math.round(topPlayers[0].win_percentage) : 
-      Math.round(topPlayers[0].win_percentage * 100)) : 0;
-  const topWinners = winPercentageGroups[highestWinRate] || [];
+    .slice(0, 3); // Get top 3 qualified players
 
   // Calculate wins this week by player
   const weeklyWinsByPlayer: { [playerName: string]: number } = {};
@@ -163,36 +141,54 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
 
       {/* Top Winners */}
       <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">
           👑 Current Win Rate Leaders 
         </h3>
-        {topWinners.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {topWinners.map((player) => (
-              <div key={player.id} className="flex items-center p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                <div className="flex-shrink-0">
-                  <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold text-lg">
-                      {player.name.charAt(0).toUpperCase()}
+        <p className="text-sm text-gray-600 mb-4">
+          Top 3 players with at least {minimumGamesRequired} games played ({Math.round((minimumGamesRequired / totalGames) * 100)}% participation)
+        </p>
+        {qualifiedPlayers.length > 0 ? (
+          <div className="space-y-3">
+            {qualifiedPlayers.map((player, index) => {
+              const rankColors = [
+                { bg: 'bg-yellow-50', border: 'border-yellow-200', icon: 'bg-yellow-500', badge: 'bg-yellow-100 text-yellow-800' },
+                { bg: 'bg-gray-50', border: 'border-gray-200', icon: 'bg-gray-500', badge: 'bg-gray-100 text-gray-800' },
+                { bg: 'bg-orange-50', border: 'border-orange-200', icon: 'bg-orange-500', badge: 'bg-orange-100 text-orange-800' }
+              ];
+              const colors = rankColors[index] || rankColors[2];
+              const rankEmojis = ['🥇', '🥈', '🥉'];
+              
+              return (
+                <div key={player.id} className={`flex items-center p-3 ${colors.bg} rounded-lg border ${colors.border}`}>
+                  <div className="flex-shrink-0 mr-3">
+                    <span className="text-2xl">{rankEmojis[index]}</span>
+                  </div>
+                  <div className="flex-shrink-0">
+                    <div className={`w-10 h-10 ${colors.icon} rounded-full flex items-center justify-center`}>
+                      <span className="text-white font-bold text-lg">
+                        {player.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="ml-3 flex-1">
+                    <p className="text-sm font-medium text-gray-900">{player.name}</p>
+                    <p className="text-sm text-gray-600">
+                      {player.games_won}/{player.games_played} games ({Math.round((player.games_played / totalGames) * 100)}% participation)
+                    </p>
+                  </div>
+                  <div className="flex-shrink-0">
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${colors.badge}`}>
+                      {player.win_percentage > 1 ? Math.round(player.win_percentage) : Math.round(player.win_percentage * 100)}%
                     </span>
                   </div>
                 </div>
-                <div className="ml-3 flex-1">
-                  <p className="text-sm font-medium text-gray-900">{player.name}</p>
-                  <p className="text-sm text-gray-600">
-                    {player.games_won}/{player.games_played} games
-                  </p>
-                </div>
-                <div className="flex-shrink-0">
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                    {player.win_percentage > 1 ? Math.round(player.win_percentage) : Math.round(player.win_percentage * 100)}%
-                  </span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
-          <p className="text-gray-500 text-center py-4">No games played yet. Start playing to see leaders!</p>
+          <p className="text-gray-500 text-center py-4">
+            No qualified players yet. Players need at least {minimumGamesRequired} games played to qualify.
+          </p>
         )}
       </div>
 

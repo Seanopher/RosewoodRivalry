@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Player, PlayerStats as PlayerStatsType } from '../types';
 import { playerAPI } from '../services/api';
 
@@ -16,10 +16,18 @@ const PlayerStats: React.FC<PlayerStatsProps> = ({
   const [playerStats, setPlayerStats] = useState<PlayerStatsType | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const detailedStatsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (selectedPlayer) {
       loadPlayerStats(selectedPlayer.id);
+      // Auto-scroll to detailed stats section
+      setTimeout(() => {
+        detailedStatsRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }, 100);
     } else {
       setPlayerStats(null);
     }
@@ -68,7 +76,8 @@ const PlayerStats: React.FC<PlayerStatsProps> = ({
     <div className="space-y-6">
       {/* Player Selection */}
       <div className="bg-white shadow rounded-lg p-6">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Player Statistics</h2>
+        <h2 className="text-lg font-medium text-gray-900 mb-2">Player Statistics</h2>
+        <p className="text-gray-600 text-sm mb-4">Select a player to view their full stats page.</p>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {players.map((player) => (
             <button
@@ -96,7 +105,7 @@ const PlayerStats: React.FC<PlayerStatsProps> = ({
 
       {/* Detailed Stats */}
       {selectedPlayer && (
-        <div className="bg-white shadow rounded-lg">
+        <div ref={detailedStatsRef} className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
             <h3 className="text-lg font-medium text-gray-900">
               {selectedPlayer.name}'s Statistics
