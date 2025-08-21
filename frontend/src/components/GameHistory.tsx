@@ -49,8 +49,10 @@ const GameHistory: React.FC<GameHistoryProps> = ({ games, onEditGame }) => {
       </div>
       
       <div className="divide-y divide-gray-200">
-        {games.map((game) => (
-          <div key={game.id} className="p-6 hover:bg-gray-50 transition-colors">
+        {games.map((game, index) => (
+          <div key={game.id} className={`p-6 transition-colors ${
+            index % 2 === 0 ? 'bg-white hover:bg-gray-50' : 'bg-gray-100 hover:bg-gray-200'
+          }`}>
             <div className="flex items-center justify-between mb-4">
               <div className="text-sm text-gray-500">
                 Game #{game.id} • {formatDate(game.played_at)}

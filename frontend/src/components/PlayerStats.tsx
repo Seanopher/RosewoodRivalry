@@ -21,11 +21,11 @@ const PlayerStats: React.FC<PlayerStatsProps> = ({
   useEffect(() => {
     if (selectedPlayer) {
       loadPlayerStats(selectedPlayer.id);
-      // Auto-scroll to detailed stats section
+      // Auto-scroll to detailed stats section (to bottom)
       setTimeout(() => {
         detailedStatsRef.current?.scrollIntoView({ 
           behavior: 'smooth', 
-          block: 'start' 
+          block: 'end' 
         });
       }, 100);
     } else {
@@ -79,7 +79,9 @@ const PlayerStats: React.FC<PlayerStatsProps> = ({
         <h2 className="text-lg font-medium text-gray-900 mb-2">Player Statistics</h2>
         <p className="text-gray-600 text-sm mb-4">Select a player to view their full stats page.</p>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {players.map((player) => (
+          {players
+            .sort((a, b) => b.win_percentage - a.win_percentage)
+            .map((player) => (
             <button
               key={player.id}
               onClick={() => onPlayerSelect(player)}

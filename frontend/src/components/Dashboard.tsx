@@ -1,5 +1,6 @@
 import React from 'react';
 import { Player, GameSummary } from '../types';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface DashboardProps {
   players: Player[];
@@ -191,6 +192,79 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
           </p>
         )}
       </div>
+
+      {/* Games Played Bar Chart */}
+      {players.length > 0 && (
+        <div className="bg-white p-6 rounded-lg shadow">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">📊 Games Played & Win Percentage</h3>
+          <div style={{ width: '100%', height: '320px' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={players
+                  .map(player => ({
+                    name: player.name,
+                    wins: player.games_won,
+                    losses: player.games_played - player.games_won
+                  }))
+                  .sort((a, b) => {
+                    const totalGamesA = a.wins + a.losses;
+                    const totalGamesB = b.wins + b.losses;
+                    
+                    // First sort by total games (descending)
+                    if (totalGamesB !== totalGamesA) {
+                      return totalGamesB - totalGamesA;
+                    }
+                    
+                    // If same total games, sort by wins (descending)
+                    return b.wins - a.wins;
+                  })
+                }
+                margin={{
+                  top: 5,
+                  right: 5,
+                  left: 5,
+                  bottom: 25,
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="name" 
+                  tick={{ fontSize: 12 }}
+                  interval={0}
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
+                />
+                <YAxis 
+                  width={30}
+                  tick={{ fontSize: 10 }}
+                  label={{ value: 'Games Played', angle: -90, position: 'insideLeft', style: { fontSize: '10px' } }}
+                />
+                <Tooltip 
+                  labelFormatter={(name) => `Player: ${name}`}
+                  formatter={(value, name) => {
+                    if (name === 'wins') return [value, 'Wins'];
+                    if (name === 'losses') return [value, 'Losses'];
+                    return [value, name];
+                  }}
+                />
+                <Bar 
+                  dataKey="wins" 
+                  stackId="games"
+                  fill="#22C55E" 
+                  radius={[0, 0, 0, 0]}
+                />
+                <Bar 
+                  dataKey="losses" 
+                  stackId="games"
+                  fill="#EF4444" 
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
 
       {/* This Week's Summary */}
       <div className="bg-white p-6 rounded-lg shadow">

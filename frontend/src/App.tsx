@@ -17,7 +17,7 @@ function App() {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [editingGameId, setEditingGameId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | React.ReactElement | null>(null);
 
   // Load initial data
   useEffect(() => {
@@ -27,15 +27,43 @@ function App() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [playersData, gamesData] = await Promise.all([
+      
+      // Add timeout to API calls
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Connection timeout')), 10000)
+      );
+      
+      const dataPromise = Promise.all([
         playerAPI.getAllPlayers(),
         gameAPI.getAllGames(20)
       ]);
+      
+      const [playersData, gamesData] = await Promise.race([dataPromise, timeoutPromise]) as [any, any];
+      
       setPlayers(playersData);
       setGames(gamesData);
       setError(null);
-    } catch (err) {
-      setError('Failed to load data. Make sure the backend is running.');
+    } catch (err: any) {
+      if (err.message === 'Connection timeout') {
+        setError(
+          <div className="text-center">
+            <div className="flex items-center justify-center mb-6">
+              <img 
+                src="/rosewood-logo.png" 
+                alt="Rosewood Rivalry" 
+                className="h-12 w-auto mr-4"
+              />
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Rosewood Rivalry</h1>
+                <span className="text-lg text-gray-600">Die Game Tracker</span>
+              </div>
+            </div>
+            <div>Connection timeout. Unable to reach the server.</div>
+          </div>
+        );
+      } else {
+        setError('Failed to load data. Please try again. If the problem persists, contact Sean Nary.');
+      }
       console.error('Error loading data:', err);
     } finally {
       setLoading(false);
@@ -94,7 +122,7 @@ function App() {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-red-600 text-lg mb-4">{error}</div>
+          <div className="text-red-600 text-lg mb-4">{typeof error === 'string' ? error : error}</div>
           <button 
             onClick={loadData}
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
