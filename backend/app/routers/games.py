@@ -167,6 +167,7 @@ def get_game(game_id: int, db: Session = Depends(get_db)):
         team1_score=game.team1_score,
         team2_score=game.team2_score,
         winner_team=game.winner_team,
+        location=game.location,
         played_at=game.played_at,
         team1_players=team1_players,
         team2_players=team2_players

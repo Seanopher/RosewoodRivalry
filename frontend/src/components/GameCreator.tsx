@@ -272,7 +272,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
                   <span className="text-blue-600 font-medium">Team 1:</span>
                   <ul className="mt-1 space-y-1">
                     {team1Players.map(id => (
-                      <li key={id} className="text-gray-700">• {getPlayerName(id)}</li>
+                      <li key={id} className="text-gray-700">{getPlayerName(id)}</li>
                     ))}
                   </ul>
                 </div>
@@ -280,7 +280,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
                   <span className="text-red-600 font-medium">Team 2:</span>
                   <ul className="mt-1 space-y-1">
                     {team2Players.map(id => (
-                      <li key={id} className="text-gray-700">• {getPlayerName(id)}</li>
+                      <li key={id} className="text-gray-700">{getPlayerName(id)}</li>
                     ))}
                   </ul>
                 </div>
