@@ -204,7 +204,13 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
         </p>
         {(() => {
           // Calculate recent performance for qualified players
-          const recentPerformers = players
+          type RecentPerformer = Player & {
+            recentGamesPlayed: number;
+            recentWins: number;
+            recentWinPercentage: number;
+          };
+          
+          const recentPerformers: RecentPerformer[] = players
             .filter(player => player.games_played >= minimumGamesRequired && player.games_played > 0)
             .map(player => {
               // Get last 10 games for this player
@@ -226,9 +232,9 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
                 recentGamesPlayed: playerGames.length,
                 recentWins: recentWins,
                 recentWinPercentage: (recentWins / playerGames.length) * 100
-              };
+              } as RecentPerformer;
             })
-            .filter((p): p is NonNullable<typeof p> => p !== null)
+            .filter((p): p is RecentPerformer => p !== null)
             .sort((a, b) => b.recentWinPercentage - a.recentWinPercentage)
             .slice(0, 3);
 
