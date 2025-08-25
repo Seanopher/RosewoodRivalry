@@ -54,8 +54,15 @@ const GameHistory: React.FC<GameHistoryProps> = ({ games, onEditGame }) => {
             index % 2 === 0 ? 'bg-white hover:bg-gray-50' : 'bg-gray-100 hover:bg-gray-200'
           }`}>
             <div className="flex items-center justify-between mb-4">
-              <div className="text-sm text-gray-500">
-                Game #{game.id} • {formatDate(game.played_at)}
+              <div className="space-y-1">
+                <div className="text-sm text-gray-500">
+                  Game #{game.id} • {formatDate(game.played_at)}
+                </div>
+                {game.location && (
+                  <div className="text-sm text-gray-600">
+                    🏟️ {game.location}
+                  </div>
+                )}
               </div>
               <div className="flex items-center gap-3">
                 <div className={`text-sm font-medium ${getWinnerColor(game.winner_team)}`}>
