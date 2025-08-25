@@ -32,6 +32,7 @@ class GameCreate(BaseModel):
     team2_score: int = Field(..., ge=0)
     team1_players: List[int] = Field(..., min_items=3, max_items=3)
     team2_players: List[int] = Field(..., min_items=3, max_items=3)
+    location: Optional[str] = Field(None, max_length=100)
     
     @validator('team2_players')
     def validate_unique_players(cls, v, values):
@@ -47,6 +48,7 @@ class GameUpdate(BaseModel):
     team2_score: Optional[int] = Field(None, ge=0)
     team1_players: Optional[List[int]] = Field(None, min_items=3, max_items=3)
     team2_players: Optional[List[int]] = Field(None, min_items=3, max_items=3)
+    location: Optional[str] = Field(None, max_length=100)
     
     @validator('team2_players')
     def validate_unique_players(cls, v, values):
@@ -62,6 +64,7 @@ class GameOut(BaseModel):
     team1_score: int
     team2_score: int
     winner_team: int
+    location: Optional[str]
     played_at: datetime
     team1_players: List['PlayerOut']
     team2_players: List['PlayerOut']
@@ -92,6 +95,7 @@ class GameSummary(BaseModel):
     team1_score: int
     team2_score: int
     winner_team: int
+    location: Optional[str]
     played_at: datetime
     team1_player_names: List[str]
     team2_player_names: List[str]
@@ -107,4 +111,43 @@ class PlayerStats(BaseModel):
     avg_loss_margin: float
     total_points_scored: int
     total_points_against: int
+    recent_games: List[GameSummary]
+
+# ---------------------------
+# Team Schemas
+# ---------------------------
+class TeamOut(BaseModel):
+    id: int
+    player1_id: int
+    player2_id: int  
+    player3_id: int
+    team_name: str
+    created_at: datetime
+    games_played: int
+    games_won: int
+    total_points_scored: int
+    total_points_against: int
+    win_percentage: float
+    avg_loss_margin: float
+    avg_win_margin: float
+    player1: PlayerOut
+    player2: PlayerOut
+    player3: PlayerOut
+
+    model_config = {
+        "from_attributes": True
+    }
+
+class TeamStats(BaseModel):
+    """Detailed team statistics"""
+    id: int
+    team_name: str
+    games_played: int
+    games_won: int
+    win_percentage: float
+    avg_win_margin: float
+    avg_loss_margin: float
+    total_points_scored: int
+    total_points_against: int
+    players: List[PlayerOut]
     recent_games: List[GameSummary]

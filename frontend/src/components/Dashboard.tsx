@@ -82,6 +82,7 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
                       hour: '2-digit',
                       minute: '2-digit'
                     })}
+                    {game.location && ` • ${game.location}`}
                   </div>
                   <div className={`text-sm font-medium ${game.winner_team === 1 ? 'text-blue-600' : 'text-red-600'}`}>
                     Team {game.winner_team} Wins!
@@ -191,6 +192,90 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
             No qualified players yet. Players need at least {minimumGamesRequired} games played to qualify.
           </p>
         )}
+      </div>
+
+      {/* Recent Performers */}
+      <div className="bg-white p-6 rounded-lg shadow">
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          🔥 Recent Performers
+        </h3>
+        <p className="text-sm text-gray-600 mb-4">
+          Top 3 players based on win rate in their last 10 games (minimum {minimumGamesRequired} total games)
+        </p>
+        {(() => {
+          // Calculate recent performance for qualified players
+          const recentPerformers = players
+            .filter(player => player.games_played >= minimumGamesRequired && player.games_played > 0)
+            .map(player => {
+              // Get last 10 games for this player
+              const playerGames = games.filter(game => 
+                game.team1_player_names.includes(player.name) || 
+                game.team2_player_names.includes(player.name)
+              ).slice(0, 10); // Take most recent 10 games
+              
+              if (playerGames.length === 0) return null;
+              
+              // Calculate wins in recent games
+              const recentWins = playerGames.filter(game => {
+                const isOnTeam1 = game.team1_player_names.includes(player.name);
+                return (isOnTeam1 && game.winner_team === 1) || (!isOnTeam1 && game.winner_team === 2);
+              }).length;
+              
+              return {
+                ...player,
+                recentGamesPlayed: playerGames.length,
+                recentWins: recentWins,
+                recentWinPercentage: (recentWins / playerGames.length) * 100
+              };
+            })
+            .filter((p): p is NonNullable<typeof p> => p !== null)
+            .sort((a, b) => b.recentWinPercentage - a.recentWinPercentage)
+            .slice(0, 3);
+
+          return recentPerformers.length > 0 ? (
+            <div className="space-y-3">
+              {recentPerformers.map((player, index) => {
+                const rankColors = [
+                  { bg: 'bg-yellow-50', border: 'border-yellow-200', icon: 'bg-yellow-500', badge: 'bg-yellow-100 text-yellow-800' },
+                  { bg: 'bg-gray-50', border: 'border-gray-200', icon: 'bg-gray-500', badge: 'bg-gray-100 text-gray-800' },
+                  { bg: 'bg-orange-50', border: 'border-orange-200', icon: 'bg-orange-500', badge: 'bg-orange-100 text-orange-800' }
+                ];
+                const colors = rankColors[index] || rankColors[2];
+                const rankEmojis = ['🔥', '⚡', '💪'];
+                
+                return (
+                  <div key={player.id} className={`flex items-center p-3 ${colors.bg} rounded-lg border ${colors.border}`}>
+                    <div className="flex-shrink-0 mr-3">
+                      <span className="text-2xl">{rankEmojis[index]}</span>
+                    </div>
+                    <div className="flex-shrink-0">
+                      <div className={`w-10 h-10 ${colors.icon} rounded-full flex items-center justify-center`}>
+                        <span className="text-white font-bold text-lg">
+                          {player.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="ml-3 flex-1">
+                      <p className="text-sm font-medium text-gray-900">{player.name}</p>
+                      <p className="text-sm text-gray-600">
+                        {player.recentWins}/{player.recentGamesPlayed} in last {player.recentGamesPlayed} games
+                      </p>
+                    </div>
+                    <div className="flex-shrink-0">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${colors.badge}`}>
+                        {Math.round(player.recentWinPercentage)}%
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-gray-500 text-center py-4">
+              No recent performers yet. Players need at least {minimumGamesRequired} total games to qualify.
+            </p>
+          );
+        })()}
       </div>
 
       {/* Games Played Bar Chart */}

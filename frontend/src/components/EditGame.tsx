@@ -25,6 +25,7 @@ const EditGame: React.FC<EditGameProps> = ({ gameId, players, onGameUpdated, onG
   
   const [team1Score, setTeam1Score] = useState<number>(0);
   const [team2Score, setTeam2Score] = useState<number>(0);
+  const [location, setLocation] = useState<string>('');
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -41,6 +42,9 @@ const EditGame: React.FC<EditGameProps> = ({ gameId, players, onGameUpdated, onG
         // Set scores
         setTeam1Score(gameData.team1_score);
         setTeam2Score(gameData.team2_score);
+        
+        // Set location
+        setLocation(gameData.location || '');
         
         // Set team players
         if (gameData.team1_players.length >= 3) {
@@ -111,6 +115,7 @@ const EditGame: React.FC<EditGameProps> = ({ gameId, players, onGameUpdated, onG
         team2_score: team2Score,
         team1_players: team1Players,
         team2_players: team2Players,
+        location: location.trim() || undefined,
       };
       
       const updatedGame = await gameAPI.updateGame(gameId, updateData);
@@ -347,6 +352,25 @@ const EditGame: React.FC<EditGameProps> = ({ gameId, players, onGameUpdated, onG
                 required
               />
             </div>
+          </div>
+
+          {/* Location */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Location (Optional)
+            </label>
+            <select
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            >
+              <option value="">Select location...</option>
+              <option value="Dreher">Dreher</option>
+              <option value="King">King</option>
+            </select>
+            <p className="mt-1 text-xs text-gray-500">
+              Where was this game played?
+            </p>
           </div>
 
           {/* Winner Preview */}

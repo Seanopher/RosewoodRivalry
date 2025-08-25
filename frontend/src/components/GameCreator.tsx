@@ -19,6 +19,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
   
   const [team1Score, setTeam1Score] = useState<string>('');
   const [team2Score, setTeam2Score] = useState<string>('');
+  const [location, setLocation] = useState<string>('');
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -77,6 +78,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
         team2_score: team2ScoreNum,
         team1_players: team1Players,
         team2_players: team2Players,
+        location: location.trim() || undefined,
       };
       
       const newGame = await gameAPI.createGame(gameData);
@@ -91,6 +93,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
       setTeam2Player3(null);
       setTeam1Score('');
       setTeam2Score('');
+      setLocation('');
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to create game');
     } finally {
@@ -313,6 +316,25 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
                 required
               />
             </div>
+          </div>
+
+          {/* Location */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Location
+            </label>
+            <select
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            >
+              <option value="">Select location...</option>
+              <option value="Dreher">Dreher</option>
+              <option value="King">King</option>
+            </select>
+            <p className="mt-1 text-xs text-gray-500">
+              Where was this game played?
+            </p>
           </div>
 
           {/* Winner Preview */}

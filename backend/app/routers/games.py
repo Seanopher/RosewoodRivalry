@@ -4,6 +4,7 @@ from typing import List
 from app.schemas.schemas import GameCreate, GameOut, GameSummary, GameUpdate
 from app.models import Game, Player, GameParticipation
 from app.database import get_db
+from app.services.team_service import update_teams_for_game
 
 router = APIRouter(prefix="/games", tags=["games"])
 
@@ -82,7 +83,8 @@ def create_game(game: GameCreate, db: Session = Depends(get_db)):
     db_game = Game(
         team1_score=game.team1_score,
         team2_score=game.team2_score,
-        winner_team=winner_team
+        winner_team=winner_team,
+        location=game.location
     )
     db.add(db_game)
     db.commit()
@@ -109,6 +111,9 @@ def create_game(game: GameCreate, db: Session = Depends(get_db)):
     
     # Update player statistics
     _update_player_stats(db, db_game)
+    
+    # Update team statistics
+    update_teams_for_game(db, db_game)
     
     # Return full game data
     return get_game(db_game.id, db)
@@ -178,6 +183,10 @@ def update_game(game_id: int, game_update: GameUpdate, db: Session = Depends(get
         game.team1_score = game_update.team1_score
     if game_update.team2_score is not None:
         game.team2_score = game_update.team2_score
+    
+    # Update location if provided
+    if game_update.location is not None:
+        game.location = game_update.location
     
     # Recalculate winner
     game.winner_team = 1 if game.team1_score > game.team2_score else 2

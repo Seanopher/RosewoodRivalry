@@ -5,7 +5,7 @@ import Dashboard from './components/Dashboard';
 import NewPlayer from './components/NewPlayer';
 import GameCreator from './components/GameCreator';
 import GameHistory from './components/GameHistory';
-import PlayerStats from './components/PlayerStats';
+import StatsPage from './components/StatsPage';
 import EditGame from './components/EditGame';
 
 type Tab = 'dashboard' | 'stats' | 'history' | 'newplayer' | 'game' | 'edit';
@@ -189,9 +189,9 @@ function App() {
         )}
         
         {activeTab === 'stats' && (
-          <PlayerStats 
-            players={players} 
-            selectedPlayer={selectedPlayer}
+          <StatsPage 
+            players={players}
+            selectedPlayer={selectedPlayer} 
             onPlayerSelect={setSelectedPlayer}
           />
         )}

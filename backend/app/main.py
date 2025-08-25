@@ -1,7 +1,7 @@
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import players, games
+from app.routers import players, games, teams
 from app.database import engine, Base
 from app import models
 
@@ -40,4 +40,4 @@ app.add_middleware(
 # Include routers
 app.include_router(players.router)
 app.include_router(games.router)
-# Teams router removed - teams are created per-game now
+app.include_router(teams.router)  # Teams API for team statistics

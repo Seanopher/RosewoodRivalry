@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Player, PlayerCreate, Game, GameCreate, GameUpdate, GameSummary, PlayerStats } from '../types';
+import { Player, PlayerCreate, Game, GameCreate, GameUpdate, GameSummary, PlayerStats, Team, TeamStats } from '../types';
 
 // API URL configuration for different environments
 const getApiBaseUrl = () => {
@@ -128,6 +128,26 @@ export const gameAPI = {
   // Delete a game
   deleteGame: async (gameId: number): Promise<void> => {
     await api.delete(`/games/${gameId}`);
+  },
+};
+
+export const teamAPI = {
+  // Get all teams
+  getAllTeams: async (): Promise<Team[]> => {
+    const response = await api.get('/teams/');
+    return response.data;
+  },
+
+  // Get team stats by ID
+  getTeamStats: async (teamId: number): Promise<TeamStats> => {
+    const response = await api.get(`/teams/${teamId}`);
+    return response.data;
+  },
+
+  // Rebuild teams from games
+  rebuildTeams: async (): Promise<{ message: string; teams_created: number }> => {
+    const response = await api.get('/teams/rebuild');
+    return response.data;
   },
 };
 

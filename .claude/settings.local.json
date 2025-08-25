@@ -5,7 +5,8 @@
       "Bash(python:*)",
       "Bash(ngrok version)",
       "Bash(choco:*)",
-      "Bash(uvicorn:*)"
+      "Bash(uvicorn:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []
