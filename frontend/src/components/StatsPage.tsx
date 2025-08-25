@@ -59,7 +59,7 @@ const StatsPage: React.FC<StatsPageProps> = ({ players, selectedPlayer, onPlayer
                     : 'text-gray-700 hover:text-gray-900 hover:bg-gray-200'
                 }`}
               >
-                Player Stats
+                🧍Player Stats
               </button>
               <button
                 onClick={() => setView('teams')}
@@ -69,7 +69,7 @@ const StatsPage: React.FC<StatsPageProps> = ({ players, selectedPlayer, onPlayer
                     : 'text-gray-700 hover:text-gray-900 hover:bg-gray-200'
                 }`}
               >
-                Team Stats
+                👨‍👦‍👦Team Stats
               </button>
             </div>
           </div>

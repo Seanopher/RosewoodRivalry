@@ -13,7 +13,11 @@ router = APIRouter(prefix="/teams", tags=["teams"])
 @router.get("/", response_model=List[TeamOut])
 def list_teams(db: Session = Depends(get_db)):
     """Get all teams with 3+ games"""
-    teams = db.query(Team).filter(Team.games_played >= 3).order_by(Team.win_percentage.desc()).all()
+    teams = db.query(Team).filter(Team.games_played >= 3).order_by(
+        Team.win_percentage.desc(),
+        Team.games_played.desc(), 
+        (Team.total_points_scored - Team.total_points_against).desc()
+    ).all()
     return teams
 
 
