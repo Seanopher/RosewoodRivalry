@@ -138,6 +138,7 @@ def list_games(limit: int = 50, db: Session = Depends(get_db)):
             team1_score=game.team1_score,
             team2_score=game.team2_score,
             winner_team=game.winner_team,
+            location=game.location,
             played_at=game.played_at,
             team1_player_names=[p.name for p in team1_players],
             team2_player_names=[p.name for p in team2_players]
