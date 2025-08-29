@@ -35,7 +35,7 @@ function App() {
       
       const dataPromise = Promise.all([
         playerAPI.getAllPlayers(),
-        gameAPI.getAllGames(20)
+        gameAPI.getAllGames()
       ]);
       
       const [playersData, gamesData] = await Promise.race([dataPromise, timeoutPromise]) as [any, any];

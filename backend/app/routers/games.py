@@ -119,7 +119,7 @@ def create_game(game: GameCreate, db: Session = Depends(get_db)):
     return get_game(db_game.id, db)
 
 @router.get("/", response_model=List[GameSummary])
-def list_games(limit: int = 50, db: Session = Depends(get_db)):
+def list_games(limit: int = 250, db: Session = Depends(get_db)):
     games = db.query(Game).order_by(Game.played_at.desc()).limit(limit).all()
     
     game_summaries = []
