@@ -158,3 +158,28 @@ class TeamStats(BaseModel):
     total_points_against: int
     players: List[PlayerOut]
     recent_games: List[GameSummary]
+
+class RivalryGame(BaseModel):
+    """Individual rivalry game"""
+    id: int
+    played_at: datetime
+    location: Optional[str]
+    orchard_team: int
+    dreher_team: int
+    orchard_players: List[str]
+    dreher_players: List[str]
+    orchard_score: int
+    dreher_score: int
+    winner: str
+
+class RivalryStats(BaseModel):
+    """Rivalry statistics between The Orchard and Dreher"""
+    total_games: int
+    orchard_wins: int
+    dreher_wins: int
+    orchard_win_percentage: float
+    dreher_win_percentage: float
+    total_orchard_points: int
+    total_dreher_points: int
+    point_differential: int
+    recent_games: List[RivalryGame]

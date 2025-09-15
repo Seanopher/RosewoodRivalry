@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Player, PlayerCreate, Game, GameCreate, GameUpdate, GameSummary, PlayerStats, Team, TeamStats, TeamsListResponse } from '../types';
+import { Player, PlayerCreate, Game, GameCreate, GameUpdate, GameSummary, PlayerStats, Team, TeamStats, TeamsListResponse, RivalryStats } from '../types';
 
 // API URL configuration for different environments
 const getApiBaseUrl = () => {
@@ -147,6 +147,14 @@ export const teamAPI = {
   // Rebuild teams from games
   rebuildTeams: async (): Promise<{ message: string; teams_created: number }> => {
     const response = await api.get('/teams/rebuild');
+    return response.data;
+  },
+};
+
+export const rivalryAPI = {
+  // Get rivalry stats
+  getRivalryStats: async (): Promise<RivalryStats> => {
+    const response = await api.get('/rivalry/');
     return response.data;
   },
 };

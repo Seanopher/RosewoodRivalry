@@ -1,6 +1,7 @@
-import React from 'react';
-import { Player, GameSummary } from '../types';
+import React, { useState, useEffect } from 'react';
+import { Player, GameSummary, RivalryStats } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { rivalryAPI } from '../services/api';
 
 interface DashboardProps {
   players: Player[];
@@ -8,6 +9,26 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
+  const [rivalryStats, setRivalryStats] = useState<RivalryStats | null>(null);
+  const [rivalryLoading, setRivalryLoading] = useState(false);
+
+  // Load rivalry stats
+  useEffect(() => {
+    loadRivalryStats();
+  }, []);
+
+  const loadRivalryStats = async () => {
+    try {
+      setRivalryLoading(true);
+      const stats = await rivalryAPI.getRivalryStats();
+      setRivalryStats(stats);
+    } catch (error) {
+      console.error('Failed to load rivalry stats:', error);
+    } finally {
+      setRivalryLoading(false);
+    }
+  };
+
   // Calculate this week's games (last 7 days)
   const oneWeekAgo = new Date();
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
@@ -140,6 +161,111 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
           )}
         </div>
       )}
+
+      {/* The Rivalry */}
+      <div className="bg-white p-6 rounded-lg shadow">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">⚔️ The Rivalry</h3>
+        <p className="text-sm text-gray-600 mb-4">The Orchard vs Dreher - Historic Matchup</p>
+        
+        {rivalryLoading ? (
+          <div className="text-center py-4">
+            <div className="text-gray-500">Loading rivalry stats...</div>
+          </div>
+        ) : rivalryStats ? (
+          <div className="space-y-6">
+            {/* Overall Stats - Side by Side */}
+            <div className="grid grid-cols-2 gap-6">
+              {/* Orchard Stats */}
+              <div className={`text-center p-4 rounded-lg ${
+                rivalryStats.orchard_wins > rivalryStats.dreher_wins ? 'bg-green-50' : 'bg-red-50'
+              }`}>
+                <div className="text-4xl mb-2 h-12 flex items-center justify-center">
+                  {rivalryStats.orchard_wins > rivalryStats.dreher_wins ? '👑' : '\u00A0'}
+                </div>
+                <div className={`text-3xl font-bold ${
+                  rivalryStats.orchard_wins > rivalryStats.dreher_wins ? 'text-green-600' : 'text-red-600'
+                }`}>{rivalryStats.orchard_wins}</div>
+                <div className="text-sm font-bold text-black-600 mb-2">The Orchard</div>
+                <div className={`text-xs mb-3 ${
+                  rivalryStats.orchard_wins > rivalryStats.dreher_wins ? 'text-green-600' : 'text-red-600'
+                }`}>{rivalryStats.orchard_win_percentage.toFixed(1)}%</div>
+                <div className={`text-lg font-semibold ${
+                  rivalryStats.orchard_wins > rivalryStats.dreher_wins ? 'text-green-600' : 'text-red-600'
+                }`}>{rivalryStats.total_orchard_points}</div>
+                <div className="text-xs text-gray-600">Total Points</div>
+              </div>
+              
+              {/* Dreher Stats */}
+              <div className={`text-center p-4 rounded-lg ${
+                rivalryStats.dreher_wins > rivalryStats.orchard_wins ? 'bg-green-50' : 'bg-red-50'
+              }`}>
+                <div className="text-4xl mb-2 h-12 flex items-center justify-center">
+                  {rivalryStats.dreher_wins > rivalryStats.orchard_wins ? '👑' : '\u00A0'}
+                </div>
+                <div className={`text-3xl font-bold ${
+                  rivalryStats.dreher_wins > rivalryStats.orchard_wins ? 'text-green-600' : 'text-red-600'
+                }`}>{rivalryStats.dreher_wins}</div>
+                <div className="text-sm font-bold text-black-600 mb-2">Dreher</div>
+                <div className={`text-xs mb-3 ${
+                  rivalryStats.dreher_wins > rivalryStats.orchard_wins ? 'text-green-600' : 'text-red-600'
+                }`}>{rivalryStats.dreher_win_percentage.toFixed(1)}%</div>
+                <div className={`text-lg font-semibold ${
+                  rivalryStats.dreher_wins > rivalryStats.orchard_wins ? 'text-green-600' : 'text-red-600'
+                }`}>{rivalryStats.total_dreher_points}</div>
+                <div className="text-xs text-gray-600">Total Points</div>
+              </div>
+            </div>
+
+            {/* Point Differential */}
+            <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <div className="text-lg font-semibold text-gray-900">
+                Point Differential: 
+                <span className={`ml-2 ${rivalryStats.point_differential >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {rivalryStats.point_differential >= 0 ? '+' : ''}{rivalryStats.point_differential}
+                </span>
+                <span className="text-sm text-gray-600 ml-1">
+                  ({rivalryStats.point_differential >= 0 ? 'Orchard' : 'Dreher'} advantage)
+                </span>
+              </div>
+            </div>
+
+            {/* Recent Games */}
+            {rivalryStats.recent_games.length > 0 && (
+              <div>
+                <h4 className="font-medium text-gray-900 mb-3">Recent Rivalry Games</h4>
+                <div className="space-y-2">
+                  {rivalryStats.recent_games.map((game) => (
+                    <div key={game.id} className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                      <div className="flex items-center space-x-4">
+                        <div className="text-sm text-gray-500">
+                          {new Date(game.played_at).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </div>
+                        <div className="text-sm">
+                          <span className="font-medium">{game.orchard_score}-{game.dreher_score}</span>
+                        </div>
+                      </div>
+                      <div className={`text-sm font-medium px-2 py-1 rounded ${
+                        game.winner === 'Orchard' 
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {game.winner}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="text-center text-gray-500 py-4">
+            No rivalry games found
+          </div>
+        )}
+      </div>
 
       {/* Top Winners */}
       <div className="bg-white p-6 rounded-lg shadow">

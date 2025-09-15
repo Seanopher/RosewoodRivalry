@@ -1,7 +1,7 @@
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import players, games, teams
+from app.routers import players, games, teams, rivalry
 from app.database import engine, Base
 from app import models
 
@@ -41,3 +41,4 @@ app.add_middleware(
 app.include_router(players.router)
 app.include_router(games.router)
 app.include_router(teams.router)  # Teams API for team statistics
+app.include_router(rivalry.router)  # Rivalry API for Orchard vs Dreher

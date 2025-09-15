@@ -107,3 +107,28 @@ export interface TeamStats {
   players: Player[];
   recent_games: GameSummary[];
 }
+
+export interface RivalryGame {
+  id: number;
+  played_at: string;
+  location?: string;
+  orchard_team: number;
+  dreher_team: number;
+  orchard_players: string[];
+  dreher_players: string[];
+  orchard_score: number;
+  dreher_score: number;
+  winner: string;
+}
+
+export interface RivalryStats {
+  total_games: number;
+  orchard_wins: number;
+  dreher_wins: number;
+  orchard_win_percentage: number;
+  dreher_win_percentage: number;
+  total_orchard_points: number;
+  total_dreher_points: number;
+  point_differential: number;
+  recent_games: RivalryGame[];
+}
