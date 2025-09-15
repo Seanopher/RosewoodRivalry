@@ -15,6 +15,7 @@ type StatsView = 'players' | 'teams';
 const StatsPage: React.FC<StatsPageProps> = ({ players, selectedPlayer, onPlayerSelect }) => {
   const [view, setView] = useState<StatsView>('players');
   const [teams, setTeams] = useState<Team[]>([]);
+  const [teamThreshold, setTeamThreshold] = useState<{ total_games: number; min_games_required: number; threshold_percentage: number } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,8 +31,13 @@ const StatsPage: React.FC<StatsPageProps> = ({ players, selectedPlayer, onPlayer
     setError(null);
     
     try {
-      const teamsData = await teamAPI.getAllTeams();
-      setTeams(teamsData);
+      const response = await teamAPI.getAllTeams();
+      setTeams(response.teams);
+      setTeamThreshold({
+        total_games: response.total_games,
+        min_games_required: response.min_games_required,
+        threshold_percentage: response.threshold_percentage
+      });
     } catch (err: any) {
       setError('Failed to load team stats');
       console.error('Error loading teams:', err);
@@ -110,7 +116,7 @@ const StatsPage: React.FC<StatsPageProps> = ({ players, selectedPlayer, onPlayer
         />
       ) : (
         !loading && !error && (
-          <TeamStats teams={teams} onTeamSelect={handleTeamSelect} />
+          <TeamStats teams={teams} onTeamSelect={handleTeamSelect} teamThreshold={teamThreshold} />
         )
       )}
     </div>

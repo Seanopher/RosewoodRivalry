@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from app.schemas.schemas import TeamOut, TeamStats, GameSummary
+from app.schemas.schemas import TeamOut, TeamStats, GameSummary, TeamsListResponse
 from app.models import Team, Game, GameParticipation, Player
 from app.database import get_db
 from app.services.team_service import rebuild_all_teams
@@ -10,15 +10,28 @@ from sqlalchemy import and_
 router = APIRouter(prefix="/teams", tags=["teams"])
 
 
-@router.get("/", response_model=List[TeamOut])
+@router.get("/", response_model=TeamsListResponse)
 def list_teams(db: Session = Depends(get_db)):
-    """Get all teams with 3+ games"""
-    teams = db.query(Team).filter(Team.games_played >= 3).order_by(
+    """Get all teams with at least 10% of total games played"""
+    # Calculate total number of games
+    total_games = db.query(Game).count()
+    
+    # Calculate minimum games required (10% of total, rounded up)
+    import math
+    min_games_required = max(3, math.ceil(total_games * 0.1))  # Minimum 3 games
+    
+    teams = db.query(Team).filter(Team.games_played >= min_games_required).order_by(
         Team.win_percentage.desc(),
         Team.games_played.desc(), 
         (Team.total_points_scored - Team.total_points_against).desc()
     ).all()
-    return teams
+    
+    return TeamsListResponse(
+        teams=teams,
+        total_games=total_games,
+        min_games_required=min_games_required,
+        threshold_percentage=10.0
+    )
 
 
 @router.get("/rebuild")

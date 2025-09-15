@@ -87,6 +87,13 @@ export interface Team {
   player3: Player;
 }
 
+export interface TeamsListResponse {
+  teams: Team[];
+  total_games: number;
+  min_games_required: number;
+  threshold_percentage: number;
+}
+
 export interface TeamStats {
   id: number;
   team_name: string;

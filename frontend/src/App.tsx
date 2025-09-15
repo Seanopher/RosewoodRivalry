@@ -55,7 +55,7 @@ function App() {
               />
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Rosewood Rivalry</h1>
-                <span className="text-lg text-gray-600">Die Game Tracker</span>
+                <span className="text-lg text-gray-600">Tailgate Game Tracker</span>
               </div>
             </div>
             <div>Connection timeout. Unable to reach the server.</div>
@@ -147,7 +147,7 @@ function App() {
               />
               <div className="ml-4">
                 <h1 className="text-2xl font-bold text-white leading-tight">Rosewood Rivalry</h1>
-                <span className="text-lg text-white">Die Game Tracker</span>
+                <span className="text-lg text-white">Tailgate Game Tracker</span>
               </div>
             </div>
           </div>

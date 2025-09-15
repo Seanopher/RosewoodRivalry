@@ -5,9 +5,10 @@ import { teamAPI } from '../services/api';
 interface TeamStatsProps {
   teams: Team[];
   onTeamSelect: (team: Team) => void;
+  teamThreshold?: { total_games: number; min_games_required: number; threshold_percentage: number } | null;
 }
 
-const TeamStats: React.FC<TeamStatsProps> = ({ teams, onTeamSelect }) => {
+const TeamStats: React.FC<TeamStatsProps> = ({ teams, onTeamSelect, teamThreshold }) => {
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [teamStats, setTeamStats] = useState<TeamStatsType | null>(null);
   const [loading, setLoading] = useState(false);
@@ -50,7 +51,13 @@ const TeamStats: React.FC<TeamStatsProps> = ({ teams, onTeamSelect }) => {
         <h2 className="text-lg font-medium text-gray-900 mb-4">Team Statistics</h2>
         <div className="text-center text-gray-500 py-8">
           <p className="text-lg">No teams found.</p>
-          <p className="text-sm mt-2">Teams are created when the same 3 players play at least 3 games together.</p>
+          <p className="text-sm mt-2">
+            Teams are created when the same 3 players play at least{' '}
+            {teamThreshold ? teamThreshold.min_games_required : 3} games together
+            {teamThreshold && (
+              <span> ({teamThreshold.threshold_percentage}% of {teamThreshold.total_games} total games)</span>
+            )}.
+          </p>
         </div>
       </div>
     );
@@ -63,7 +70,11 @@ const TeamStats: React.FC<TeamStatsProps> = ({ teams, onTeamSelect }) => {
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-medium text-gray-900">Team Statistics</h2>
           <p className="text-sm text-gray-500 mt-1">
-            {teams.length} team{teams.length !== 1 ? 's' : ''} with 3+ games
+            {teams.length} team{teams.length !== 1 ? 's' : ''} with{' '}
+            {teamThreshold ? `${teamThreshold.min_games_required}+` : '3+'} games
+            {teamThreshold && (
+              <span> ({teamThreshold.threshold_percentage}% of {teamThreshold.total_games} total games)</span>
+            )}
           </p>
         </div>
 

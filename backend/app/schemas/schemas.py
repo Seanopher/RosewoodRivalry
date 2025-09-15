@@ -138,6 +138,13 @@ class TeamOut(BaseModel):
         "from_attributes": True
     }
 
+class TeamsListResponse(BaseModel):
+    """Response model for team list with threshold info"""
+    teams: List[TeamOut]
+    total_games: int
+    min_games_required: int
+    threshold_percentage: float = 10.0
+
 class TeamStats(BaseModel):
     """Detailed team statistics"""
     id: int

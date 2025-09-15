@@ -55,7 +55,7 @@ const PlayerStats: React.FC<PlayerStatsProps> = ({
   };
 
   const getWinRateColor = (percentage: number) => {
-    if (percentage >= 75) return 'text-green-600';
+    if (percentage >= 55) return 'text-green-600';
     if (percentage >= 50) return 'text-yellow-600';
     return 'text-red-600';
   };

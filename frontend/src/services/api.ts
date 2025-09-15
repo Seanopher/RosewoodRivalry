@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Player, PlayerCreate, Game, GameCreate, GameUpdate, GameSummary, PlayerStats, Team, TeamStats } from '../types';
+import { Player, PlayerCreate, Game, GameCreate, GameUpdate, GameSummary, PlayerStats, Team, TeamStats, TeamsListResponse } from '../types';
 
 // API URL configuration for different environments
 const getApiBaseUrl = () => {
@@ -133,7 +133,7 @@ export const gameAPI = {
 
 export const teamAPI = {
   // Get all teams
-  getAllTeams: async (): Promise<Team[]> => {
+  getAllTeams: async (): Promise<TeamsListResponse> => {
     const response = await api.get('/teams/');
     return response.data;
   },
