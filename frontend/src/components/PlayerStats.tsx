@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Player, PlayerStats as PlayerStatsType } from '../types';
 import { playerAPI } from '../services/api';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 
 interface PlayerStatsProps {
   players: Player[];
@@ -195,6 +196,100 @@ const PlayerStats: React.FC<PlayerStatsProps> = ({
                       </span>
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* Your Win/Loss Margin vs Avg Chart */}
+              <div className="pt-6 border-t border-gray-200">
+                <h4 className="font-medium text-gray-900 mb-4">Your Win/Loss Margin vs Avg</h4>
+                <div style={{ width: '100%', height: '200px' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    {(() => {
+                      // Calculate averages and domain outside of render
+                      const avgWin = players.length > 0 ? players.reduce((sum, p) => sum + p.avg_win_margin, 0) / players.length : 0;
+                      const avgLoss = players.length > 0 ? -(players.reduce((sum, p) => sum + p.avg_loss_margin, 0) / players.length) : 0;
+                      
+                      // Get player's values
+                      const playerWin = playerStats.avg_win_margin;
+                      const playerLoss = -playerStats.avg_loss_margin;
+                      
+                      // Calculate min and max with 20% padding
+                      const allValues = [avgWin, avgLoss, playerWin, playerLoss, 0]; // Include 0 baseline
+                      const minVal = Math.min(...allValues);
+                      const maxVal = Math.max(...allValues);
+                      
+                      // Simple 20% padding above highest and below lowest
+                      const yMin = minVal - (Math.abs(minVal) * 0.2);
+                      const yMax = maxVal + (Math.abs(maxVal) * 0.2);
+                      
+                      const yDomain = [yMin, yMax];
+                      
+                      return (
+                        <BarChart
+                          data={[{
+                            name: playerStats.name,
+                            winMargin: playerStats.avg_win_margin,
+                            lossMargin: -playerStats.avg_loss_margin
+                          }]}
+                          margin={{
+                            top: 5,
+                            right: 5,
+                            left: 0,
+                            bottom: 25,
+                          }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis 
+                            dataKey="name" 
+                            tick={{ fontSize: 12 }}
+                          />
+                          <YAxis 
+                            width={35}
+                            tick={{ fontSize: 10 }}
+                            label={{ value: 'Point Margin', angle: -90, position: 'insideLeft', style: { fontSize: '10px' } }}
+                          />
+                          <ReferenceLine y={0} stroke="#666" strokeDasharray="2 2" />
+                          <ReferenceLine 
+                            y={avgWin} 
+                            stroke="#22C55E"
+                            strokeDasharray="3 3" 
+                            label={{
+                              value: `Avg +${avgWin.toFixed(1)}`,
+                              position: "insideTopRight"
+                            }}
+                          />
+                          <ReferenceLine 
+                            y={avgLoss} 
+                            stroke="#EF4444" 
+                            strokeDasharray="2 2" 
+                            label={{
+                              value: `Avg -${Math.abs(avgLoss).toFixed(1)}`,
+                              position: "insideBottomRight"
+                            }}
+                          />
+                          <Tooltip 
+                            labelFormatter={(name) => `Player: ${name}`}
+                            formatter={(value, name) => {
+                              const numValue = Number(value);
+                              if (name === 'winMargin') return [`+${numValue.toFixed(1)}`, 'Your Win Margin'];
+                              if (name === 'lossMargin') return [`-${Math.abs(numValue).toFixed(1)}`, 'Your Loss Margin'];
+                              return [value, name];
+                            }}
+                          />
+                          <Bar 
+                            dataKey="winMargin" 
+                            fill="#22C55E" 
+                            radius={[2, 2, 0, 0]}
+                          />
+                          <Bar 
+                            dataKey="lossMargin" 
+                            fill="#EF4444" 
+                            radius={[0, 0, 2, 2]}
+                          />
+                        </BarChart>
+                      );
+                    })()}
+                  </ResponsiveContainer>
                 </div>
               </div>
 

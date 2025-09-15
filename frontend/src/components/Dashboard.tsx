@@ -1,6 +1,6 @@
 import React from 'react';
 import { Player, GameSummary } from '../types';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 
 interface DashboardProps {
   players: Player[];
@@ -357,72 +357,6 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
         </div>
       )}
 
-      {/* Win & Loss Margins Chart */}
-      {players.length > 0 && (
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">📊 Win & Loss Margins by Player</h3>
-          <div style={{ width: '100%', height: '320px' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={players
-                  .filter(player => player.games_played >= minimumGamesRequired && player.games_played > 0)
-                  .map(player => ({
-                    name: player.name,
-                    winMargin: player.avg_win_margin,
-                    lossMargin: -player.avg_loss_margin // Keep negative for downward bars
-                  }))
-                  .sort((a, b) => {
-                    // Sort by total games (find original player for games count)
-                    const playerA = players.find(p => p.name === a.name);
-                    const playerB = players.find(p => p.name === b.name);
-                    return (playerB?.games_played || 0) - (playerA?.games_played || 0);
-                  })
-                }
-                margin={{
-                  top: 5,
-                  right: 5,
-                  left: 10,
-                  bottom: 25,
-                }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="name" 
-                  tick={{ fontSize: 12 }}
-                  interval={0}
-                  angle={-45}
-                  textAnchor="end"
-                  height={60}
-                />
-                <YAxis 
-                  width={35}
-                  tick={{ fontSize: 10 }}
-                  label={{ value: 'Point Margin', angle: -90, position: 'insideLeft', style: { fontSize: '10px' } }}
-                />
-                <Tooltip 
-                  labelFormatter={(name) => `Player: ${name}`}
-                  formatter={(value, name) => {
-                    const numValue = Number(value);
-                    if (name === 'winMargin') return [`+${numValue.toFixed(1)}`, 'Avg Win Margin'];
-                    if (name === 'lossMargin') return [`-${Math.abs(numValue).toFixed(1)}`, 'Avg Loss Margin'];
-                    return [value, name];
-                  }}
-                />
-                <Bar 
-                  dataKey="winMargin" 
-                  fill="#22C55E" 
-                  radius={[2, 2, 0, 0]}
-                />
-                <Bar 
-                  dataKey="lossMargin" 
-                  fill="#EF4444" 
-                  radius={[0, 0, 2, 2]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      )}
 
       {/* This Week's Summary */}
       <div className="bg-white p-6 rounded-lg shadow">
