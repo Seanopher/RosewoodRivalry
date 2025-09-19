@@ -6,10 +6,18 @@ from typing import Generator
 import os
 
 # Get database URL from environment variable
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql://postgres:7%40Chatham@localhost:5432/rosewoodrivalry"
-)
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    # For local development, load from .env file or use safe fallback
+    from dotenv import load_dotenv
+    load_dotenv()
+    DATABASE_URL = os.getenv("DATABASE_URL")
+
+    if not DATABASE_URL:
+        raise ValueError(
+            "DATABASE_URL environment variable is required. "
+            "Please create a .env file with DATABASE_URL=your_database_connection_string"
+        )
 
 # Convert postgresql:// to postgresql+psycopg2:// for SQLAlchemy with psycopg2
 if DATABASE_URL and DATABASE_URL.startswith("postgresql://"):
