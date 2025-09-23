@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Player, GameSummary, RivalryStats } from '../types';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { rivalryAPI } from '../services/api';
 
 interface DashboardProps {
@@ -71,13 +71,7 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
     });
   });
 
-  // Convert to array and sort by wins
-  const weeklyWinsData = Object.entries(weeklyWinsByPlayer)
-    .map(([name, wins]) => ({ name, wins }))
-    .sort((a, b) => b.wins - a.wins)
-    .slice(0, 8); // Show top 8 players
 
-  const maxWins = Math.max(...weeklyWinsData.map(d => d.wins), 1);
 
   return (
     <div className="space-y-6">
@@ -305,7 +299,7 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
                     </p>
                   </div>
                   <div className="flex-shrink-0">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${colors.badge}`}>
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full font-medium ${colors.badge}`}>
                       {player.win_percentage > 1 ? Math.round(player.win_percentage) : Math.round(player.win_percentage * 100)}%
                     </span>
                   </div>

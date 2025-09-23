@@ -98,9 +98,9 @@ const NewPlayer: React.FC<NewPlayerProps> = ({ onPlayerCreated }) => {
       <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
         <h3 className="text-sm font-medium text-blue-900 mb-2">💡 Tips</h3>
         <ul className="text-sm text-blue-700 space-y-1">
-          <li>• Player names should be unique and easy to identify</li>
-          <li>• Once created, players will appear in the Player Stats tab</li>
-          <li>• Players can immediately participate in games after creation</li>
+          <li>Player names should be unique and easy to identify</li>
+          <li>Once created, players will appear in the Player Stats tab</li>
+          <li>Players can immediately participate in games after creation</li>
         </ul>
       </div>
     </div>
