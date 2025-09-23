@@ -62,7 +62,7 @@ function App() {
           </div>
         );
       } else {
-        setError('Failed to load data. Please try again. If the problem persists, contact Sean Nary.');
+        setError(`Failed to load data. Please try again. If the problem persists, contact an administrator. Error: ${err.message || err}`);
       }
       console.error('Error loading data:', err);
     } finally {
