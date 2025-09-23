@@ -34,7 +34,7 @@ class Game(Base):
     team2_score = Column(Integer, nullable=False)
     winner_team = Column(Integer, nullable=False)  # 1 or 2
     location = Column(String, nullable=True)  # Where the game was played
-    played_at = Column(DateTime, default=est_now)
+    played_at = Column(DateTime, default=est_now, index=True)
     
     # Relationships
     participations = relationship("GameParticipation", back_populates="game")
@@ -45,8 +45,8 @@ class GameParticipation(Base):
     __tablename__ = "game_participations"
 
     id = Column(Integer, primary_key=True, index=True)
-    game_id = Column(Integer, ForeignKey("games.id"), nullable=False)
-    player_id = Column(Integer, ForeignKey("players.id"), nullable=False)
+    game_id = Column(Integer, ForeignKey("games.id"), nullable=False, index=True)
+    player_id = Column(Integer, ForeignKey("players.id"), nullable=False, index=True)
     team_number = Column(Integer, nullable=False)  # 1 or 2
     
     # Relationships
@@ -59,9 +59,9 @@ class Team(Base):
     __tablename__ = "teams"
 
     id = Column(Integer, primary_key=True, index=True)
-    player1_id = Column(Integer, ForeignKey("players.id"), nullable=False)
-    player2_id = Column(Integer, ForeignKey("players.id"), nullable=False)
-    player3_id = Column(Integer, ForeignKey("players.id"), nullable=False)
+    player1_id = Column(Integer, ForeignKey("players.id"), nullable=False, index=True)
+    player2_id = Column(Integer, ForeignKey("players.id"), nullable=False, index=True)
+    player3_id = Column(Integer, ForeignKey("players.id"), nullable=False, index=True)
     team_name = Column(String, nullable=False)  # e.g., "Nary/Silverman/Pendleton"
     created_at = Column(DateTime, default=est_now)
     

@@ -121,18 +121,34 @@ def create_game(game: GameCreate, db: Session = Depends(get_db)):
 @router.get("/", response_model=List[GameSummary])
 def list_games(limit: int = 250, db: Session = Depends(get_db)):
     games = db.query(Game).order_by(Game.played_at.desc()).limit(limit).all()
-    
+
+    if not games:
+        return []
+
+    # Get all game IDs to fetch participations in one query
+    game_ids = [game.id for game in games]
+
+    # Fetch all participations for these games in one query
+    participations = db.query(GameParticipation, Player).join(Player).filter(
+        GameParticipation.game_id.in_(game_ids)
+    ).all()
+
+    # Group participations by game_id and team_number
+    game_teams = {}
+    for participation, player in participations:
+        game_id = participation.game_id
+        team_num = participation.team_number
+
+        if game_id not in game_teams:
+            game_teams[game_id] = {1: [], 2: []}
+
+        game_teams[game_id][team_num].append(player.name)
+
+    # Build game summaries
     game_summaries = []
     for game in games:
-        team1_players = db.query(Player).join(GameParticipation).filter(
-            GameParticipation.game_id == game.id,
-            GameParticipation.team_number == 1
-        ).all()
-        team2_players = db.query(Player).join(GameParticipation).filter(
-            GameParticipation.game_id == game.id,
-            GameParticipation.team_number == 2
-        ).all()
-        
+        teams = game_teams.get(game.id, {1: [], 2: []})
+
         game_summaries.append(GameSummary(
             id=game.id,
             team1_score=game.team1_score,
@@ -140,10 +156,10 @@ def list_games(limit: int = 250, db: Session = Depends(get_db)):
             winner_team=game.winner_team,
             location=game.location,
             played_at=game.played_at,
-            team1_player_names=[p.name for p in team1_players],
-            team2_player_names=[p.name for p in team2_players]
+            team1_player_names=teams[1],
+            team2_player_names=teams[2]
         ))
-    
+
     return game_summaries
 
 @router.get("/{game_id}", response_model=GameOut)
