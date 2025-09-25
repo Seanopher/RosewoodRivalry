@@ -18,6 +18,7 @@ function App() {
   const [editingGameId, setEditingGameId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | React.ReactElement | null>(null);
+  const [dataRefreshKey, setDataRefreshKey] = useState(0);
 
   // Load initial data
   useEffect(() => {
@@ -77,6 +78,8 @@ function App() {
   const handleGameCreated = (newGame: any) => {
     // Reload data to get updated player stats and game list
     loadData();
+    // Force refresh of PlayerStats component by incrementing key
+    setDataRefreshKey(prev => prev + 1);
   };
 
   const handlePlayerSelect = (player: Player) => {
@@ -113,13 +116,13 @@ function App() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="flex flex-col items-center space-y-4">
+        <div className="text-center">
           <img
             src="/rosewood-logo.png"
             alt="Rosewood Rivalry"
-            className="w-32 h-32 animate-pulse"
+            className="w-32 h-32 animate-pulse mx-auto mb-6"
           />
-          <div className="text-lg font-medium text-gray-700">Loading...</div>
+          <div className="text-lg font-medium text-black">Loading...</div>
         </div>
       </div>
     );
@@ -196,10 +199,11 @@ function App() {
         )}
         
         {activeTab === 'stats' && (
-          <StatsPage 
+          <StatsPage
             players={players}
-            selectedPlayer={selectedPlayer} 
+            selectedPlayer={selectedPlayer}
             onPlayerSelect={setSelectedPlayer}
+            key={`stats-${dataRefreshKey}`}
           />
         )}
         

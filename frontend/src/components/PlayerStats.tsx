@@ -258,13 +258,13 @@ const PlayerStats: React.FC<PlayerStatsProps> = ({
                               position: "insideTopRight"
                             }}
                           />
-                          <ReferenceLine 
-                            y={avgLoss} 
-                            stroke="#EF4444" 
-                            strokeDasharray="2 2" 
+                          <ReferenceLine
+                            y={avgLoss}
+                            stroke="#EF4444"
+                            strokeDasharray="2 2"
                             label={{
                               value: `Avg -${Math.abs(avgLoss).toFixed(1)}`,
-                              position: "insideBottomRight"
+                              position: "insideBottomLeft"
                             }}
                           />
                           <Tooltip 
@@ -296,7 +296,35 @@ const PlayerStats: React.FC<PlayerStatsProps> = ({
               {/* Recent Games */}
               {playerStats.recent_games.length > 0 && (
                 <div className="pt-6 border-t border-gray-200">
-                  <h4 className="font-medium text-gray-900 mb-4">Recent Games</h4>
+                  {(() => {
+                    // Calculate recent games stats
+                    let wins = 0;
+                    let totalPointDifferential = 0;
+
+                    playerStats.recent_games.forEach((game) => {
+                      const isPlayerOnTeam1 = game.team1_player_names.includes(playerStats.name);
+                      const playerTeam = isPlayerOnTeam1 ? 1 : 2;
+                      const isWin = game.winner_team === playerTeam;
+                      const playerScore = isPlayerOnTeam1 ? game.team1_score : game.team2_score;
+                      const opponentScore = isPlayerOnTeam1 ? game.team2_score : game.team1_score;
+
+                      if (isWin) wins++;
+                      totalPointDifferential += (playerScore - opponentScore);
+                    });
+
+                    const losses = playerStats.recent_games.length - wins;
+                    const recordColor = wins > losses ? 'text-green-600' : wins < losses ? 'text-red-600' : 'text-yellow-600';
+                    const differentialColor = totalPointDifferential > 0 ? 'text-green-600' : totalPointDifferential < 0 ? 'text-red-600' : 'text-gray-900';
+                    const differentialSign = totalPointDifferential > 0 ? '+' : '';
+
+                    return (
+                      <h4 className="font-medium text-gray-900 mb-4">
+                        Recent Games{' '}
+                        <span className={recordColor}>({wins}-{losses})</span>{' '}
+                        <span className={differentialColor}>{differentialSign}{totalPointDifferential} pts</span>
+                      </h4>
+                    );
+                  })()}
                   <div className="space-y-3">
                     {playerStats.recent_games.map((game) => {
                       const isPlayerOnTeam1 = game.team1_player_names.includes(playerStats.name);
