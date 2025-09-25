@@ -30,8 +30,24 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000, // 10 second timeout
+  timeout: 30000, // 30 second timeout for cold starts
 });
+
+// Retry configuration
+const RETRY_CONFIG = {
+  maxRetries: 2, // Retry once on failure
+  retryDelay: 3000, // 3 second delay before retry
+  retryCondition: (error: any) => {
+    // Retry on network errors, timeouts, or 5xx server errors (cold start related)
+    return (
+      error.code === 'ECONNABORTED' || // Timeout
+      error.code === 'NETWORK_ERROR' || // Network error
+      error.message === 'Network Error' || // General network error
+      !error.response || // No response (connection failed)
+      (error.response && error.response.status >= 500) // Server errors
+    );
+  }
+};
 
 // Add request interceptor for debugging
 api.interceptors.request.use(
@@ -50,7 +66,10 @@ api.interceptors.request.use(
   }
 );
 
-// Add response interceptor for debugging
+// Retry helper function
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Add response interceptor with retry logic
 api.interceptors.response.use(
   (response) => {
     console.log('API Response Success:', {
@@ -60,14 +79,38 @@ api.interceptors.response.use(
     });
     return response;
   },
-  (error) => {
-    console.error('API Response Error:', {
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Check if this is a retryable error and we haven't exceeded max retries
+    if (RETRY_CONFIG.retryCondition(error) && !originalRequest._retry) {
+      originalRequest._retry = true;
+      originalRequest._retryCount = (originalRequest._retryCount || 0) + 1;
+
+      if (originalRequest._retryCount <= RETRY_CONFIG.maxRetries) {
+        console.warn(`API Request failed, retrying (${originalRequest._retryCount}/${RETRY_CONFIG.maxRetries})...`, {
+          url: originalRequest.url,
+          error: error.message,
+          retryAfter: RETRY_CONFIG.retryDelay
+        });
+
+        // Wait before retrying
+        await sleep(RETRY_CONFIG.retryDelay);
+
+        // Retry the request
+        return api(originalRequest);
+      }
+    }
+
+    console.error('API Response Error (final):', {
       url: error.config?.url,
       status: error.response?.status,
       message: error.message,
       responseData: error.response?.data,
-      code: error.code
+      code: error.code,
+      retries: originalRequest._retryCount || 0
     });
+
     return Promise.reject(error);
   }
 );

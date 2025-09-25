@@ -113,7 +113,14 @@ function App() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
+        <div className="flex flex-col items-center space-y-4">
+          <img
+            src="/rosewood-logo.png"
+            alt="Rosewood Rivalry"
+            className="w-32 h-32 animate-pulse"
+          />
+          <div className="text-lg font-medium text-gray-700">Loading...</div>
+        </div>
       </div>
     );
   }
