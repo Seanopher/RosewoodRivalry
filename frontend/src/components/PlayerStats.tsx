@@ -113,6 +113,11 @@ const PlayerStats: React.FC<PlayerStatsProps> = ({
             <h3 className="text-lg font-medium text-gray-900">
               {selectedPlayer.name}'s Statistics
             </h3>
+            {selectedPlayer.name === "Brendan Meagher" && (
+              <div className="mt-4 flex justify-center">
+                <img src={require('../gifs/shaky-dog.gif')} alt="Brendan Meagher" className="rounded-lg w-32 h-32 object-cover" />
+              </div>
+            )}
           </div>
 
           {loading ? (
