@@ -36,7 +36,7 @@ const api = axios.create({
 // Retry configuration
 const RETRY_CONFIG = {
   maxRetries: 2, // Retry once on failure
-  retryDelay: 1500, // 1.5 seconds delay between retries
+  retryDelay: 1000, // 1 seconds delay between retries
   retryCondition: (error: any) => {
     // Retry on network errors, timeouts, or 5xx server errors (cold start related)
     return (

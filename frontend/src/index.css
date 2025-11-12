@@ -62,6 +62,7 @@ body {
 
 .font-medium { font-weight: 500; }
 .font-bold { font-weight: 700; }
+.rankpadding { padding: 10px;}
 
 .border { border-width: 1px; }
 .border-b { border-bottom-width: 1px; }

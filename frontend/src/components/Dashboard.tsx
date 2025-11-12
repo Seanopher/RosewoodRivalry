@@ -53,11 +53,10 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
   const totalGames = games.length;
   const minimumGamesRequired = Math.ceil(totalGames * 0.333); // 33.3% of total games
   
-  // Find top 3 qualified players with highest win percentage
+  // Find all qualified players with highest win percentage
   const qualifiedPlayers = [...players]
     .filter(player => player.games_played >= minimumGamesRequired && player.games_played > 0)
-    .sort((a, b) => b.win_percentage - a.win_percentage)
-    .slice(0, 3); // Get top 3 qualified players
+    .sort((a, b) => b.win_percentage - a.win_percentage); // Get all qualified players
 
   // Calculate wins this week by player
   const weeklyWinsByPlayer: { [playerName: string]: number } = {};
@@ -267,32 +266,32 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
           👑 All-Time Win Rate Leaders 
         </h3>
         <p className="text-sm text-gray-600 mb-4">
-          Top 3 players with at least {minimumGamesRequired} games played ({Math.round((minimumGamesRequired / totalGames) * 100)}% participation)
+          All players with at least {minimumGamesRequired} games played ({Math.round((minimumGamesRequired / totalGames) * 100)}% participation)
         </p>
         {qualifiedPlayers.length > 0 ? (
           <div className="space-y-3">
             {qualifiedPlayers.map((player, index) => {
+              // Top 3 get special colors and medal emojis
               const rankColors = [
                 { bg: 'bg-yellow-50', border: 'border-yellow-200', icon: 'bg-yellow-500', badge: 'bg-yellow-100 text-yellow-800' },
                 { bg: 'bg-gray-50', border: 'border-gray-200', icon: 'bg-gray-500', badge: 'bg-gray-100 text-gray-800' },
                 { bg: 'bg-orange-50', border: 'border-orange-200', icon: 'bg-orange-500', badge: 'bg-orange-100 text-orange-800' }
               ];
-              const colors = rankColors[index] || rankColors[2];
+              // Default styling for ranks 4+
+              const defaultColors = { bg: 'bg-white', border: 'border-gray-200', icon: 'bg-blue-500', badge: 'bg-blue-100 text-blue-800' };
+              const colors = index < 3 ? rankColors[index] : defaultColors;
               const rankEmojis = ['🥇', '🥈', '🥉'];
-              
+
               return (
                 <div key={player.id} className={`flex items-center p-3 ${colors.bg} rounded-lg border ${colors.border}`}>
-                  <div className="flex-shrink-0 mr-3">
-                    <span className="text-2xl">{rankEmojis[index]}</span>
+                  <div className="flex-shrink-0 mr-3 w-10 flex items-center justify-center">
+                    {index < 3 ? (
+                      <span className="text-2xl">{rankEmojis[index]}</span>
+                    ) : (
+                      <span className="text-xl font-bold text-gray-700 rankpadding">{index + 1}</span>
+                    )}
                   </div>
-                  <div className="flex-shrink-0">
-                    <div className={`w-10 h-10 ${colors.icon} rounded-full flex items-center justify-center`}>
-                      <span className="text-white font-bold text-lg">
-                        {player.name.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="ml-3 flex-1">
+                  <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900">{player.name}</p>
                     <p className="text-sm text-gray-600">
                       {player.games_won}/{player.games_played} games ({Math.round((player.games_played / totalGames) * 100)}% participation)
