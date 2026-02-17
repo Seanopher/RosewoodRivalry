@@ -29,7 +29,7 @@ const StatsPage: React.FC<StatsPageProps> = ({ players, selectedPlayer, onPlayer
   const loadTeams = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await teamAPI.getAllTeams();
       setTeams(response.teams);
@@ -51,29 +51,39 @@ const StatsPage: React.FC<StatsPageProps> = ({ players, selectedPlayer, onPlayer
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fadeIn">
       {/* Toggle Buttons */}
-      <div className="bg-white shadow rounded-lg">
+      <div className="rounded-lg" style={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}>
         <div className="px-6 py-4">
           <div className="flex items-center justify-center">
-            <div className="flex bg-gray-100 rounded-lg p-1">
+            <div className="flex rounded-lg p-1" style={{ backgroundColor: '#0f172a' }}>
               <button
                 onClick={() => setView('players')}
-                className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${
-                  view === 'players'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-200'
-                }`}
+                style={{
+                  padding: '0.5rem 1.5rem',
+                  borderRadius: '0.375rem',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  backgroundColor: view === 'players' ? '#f43f5e' : 'transparent',
+                  color: view === 'players' ? '#f8fafc' : '#94a3b8',
+                  border: 'none',
+                  transition: 'all 0.15s ease',
+                }}
               >
                 🧍Player Stats
               </button>
               <button
                 onClick={() => setView('teams')}
-                className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${
-                  view === 'teams'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-200'
-                }`}
+                style={{
+                  padding: '0.5rem 1.5rem',
+                  borderRadius: '0.375rem',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  backgroundColor: view === 'teams' ? '#f43f5e' : 'transparent',
+                  color: view === 'teams' ? '#f8fafc' : '#94a3b8',
+                  border: 'none',
+                  transition: 'all 0.15s ease',
+                }}
               >
                 👨‍👦‍👦Team Stats
               </button>
@@ -84,22 +94,29 @@ const StatsPage: React.FC<StatsPageProps> = ({ players, selectedPlayer, onPlayer
 
       {/* Loading State */}
       {loading && view === 'teams' && (
-        <div className="bg-white shadow rounded-lg p-6">
+        <div className="rounded-lg p-6" style={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}>
           <div className="text-center py-4">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="ml-2 text-gray-600">Loading team statistics...</span>
+            <div className="inline-block animate-spin rounded-full h-8 w-8" style={{ borderBottom: '2px solid #f43f5e' }}></div>
+            <span className="ml-2" style={{ color: '#94a3b8' }}>Loading team statistics...</span>
           </div>
         </div>
       )}
 
       {/* Error State */}
       {error && view === 'teams' && (
-        <div className="bg-white shadow rounded-lg p-6">
-          <div className="text-red-600 text-center py-4">
+        <div className="rounded-lg p-6" style={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}>
+          <div className="text-center py-4" style={{ color: '#f87171' }}>
             <p>{error}</p>
             <button
               onClick={loadTeams}
-              className="mt-2 px-4 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200"
+              style={{
+                marginTop: '0.5rem',
+                padding: '0.5rem 1rem',
+                backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                color: '#f87171',
+                borderRadius: '0.375rem',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+              }}
             >
               Retry
             </button>
@@ -109,10 +126,10 @@ const StatsPage: React.FC<StatsPageProps> = ({ players, selectedPlayer, onPlayer
 
       {/* Content */}
       {view === 'players' ? (
-        <PlayerStats 
-          players={players} 
+        <PlayerStats
+          players={players}
           selectedPlayer={selectedPlayer}
-          onPlayerSelect={onPlayerSelect} 
+          onPlayerSelect={onPlayerSelect}
         />
       ) : (
         !loading && !error && (

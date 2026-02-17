@@ -55,8 +55,8 @@ function App() {
                 className="h-12 w-auto mr-4"
               />
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Rosewood Rivalry</h1>
-                <span className="text-lg text-gray-600">Tailgate Game Tracker</span>
+                <h1 className="text-2xl font-bold" style={{ color: '#f1f5f9' }}>Rosewood Rivalry</h1>
+                <span className="text-lg" style={{ color: '#94a3b8' }}>Tailgate Game Tracker</span>
               </div>
             </div>
             <div>Connection timeout. Unable to reach the server.</div>
@@ -115,14 +115,14 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0f172a' }}>
         <div className="text-center">
           <img
             src="/rosewood-logo.png"
             alt="Rosewood Rivalry"
             className="w-32 h-32 animate-pulse mx-auto mb-6"
           />
-          <div className="text-lg font-medium text-black">Loading...</div>
+          <div className="text-lg font-medium" style={{ color: '#f1f5f9' }}>Loading...</div>
         </div>
       </div>
     );
@@ -130,12 +130,12 @@ function App() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0f172a' }}>
+        <div className="text-center" style={{ maxWidth: '500px', padding: '2rem' }}>
           <div className="text-red-600 text-lg mb-4">{typeof error === 'string' ? error : error}</div>
-          <button 
+          <button
             onClick={loadData}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            style={{ backgroundColor: '#f43f5e', color: '#f8fafc', padding: '0.5rem 1.5rem', borderRadius: '0.375rem', border: 'none' }}
           >
             Retry
           </button>
@@ -145,26 +145,26 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#FFE6E6' }}>
-      <div className="shadow-sm" style={{ backgroundColor: '#FFB8B8' }}>
+    <div className="min-h-screen" style={{ backgroundColor: '#0f172a' }}>
+      <div style={{ background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)', borderBottom: '2px solid #f43f5e', boxShadow: '0 2px 20px rgba(244, 63, 94, 0.1)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center">
-              <img 
-                src="/rosewood-logo.png" 
-                alt="Rosewood Rivalry" 
+              <img
+                src="/rosewood-logo.png"
+                alt="Rosewood Rivalry"
                 className="h-8 w-auto"
               />
               <div className="ml-4">
-                <h1 className="text-2xl font-bold text-white leading-tight">Rosewood Rivalry</h1>
-                <span className="text-lg text-white">Tailgate Game Tracker</span>
+                <h1 className="text-2xl font-bold leading-tight" style={{ color: '#f8fafc' }}>Rosewood Rivalry</h1>
+                <span className="text-sm" style={{ color: '#94a3b8' }}>Tailgate Game Tracker</span>
               </div>
             </div>
           </div>
-          
+
           {/* Navigation Tabs */}
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8">
+          <div style={{ borderBottom: '1px solid #334155' }}>
+            <nav className="-mb-px flex space-x-4">
               {[
                 { key: 'dashboard', label: '🏠 Home' },
                 { key: 'stats', label: '📊 Stats' },
@@ -175,11 +175,20 @@ function App() {
                 <button
                   key={key}
                   onClick={() => setActiveTab(key as Tab)}
-                  className={`${
-                    activeTab === key
-                      ? 'bg-white text-black border-white'
-                      : 'bg-white text-black hover:bg-gray-100 border-transparent'
-                  } whitespace-nowrap py-4 px-3 border-b-2 font-medium text-sm flex items-center rounded-t-md`}
+                  style={{
+                    backgroundColor: activeTab === key ? 'rgba(244, 63, 94, 0.15)' : 'transparent',
+                    color: activeTab === key ? '#f43f5e' : '#94a3b8',
+                    borderBottom: activeTab === key ? '2px solid #f43f5e' : '2px solid transparent',
+                    borderTop: 'none',
+                    borderLeft: 'none',
+                    borderRight: 'none',
+                    padding: '0.75rem 1rem',
+                    fontSize: '0.875rem',
+                    fontWeight: activeTab === key ? 600 : 500,
+                    borderRadius: '0.375rem 0.375rem 0 0',
+                    transition: 'all 0.15s ease',
+                  }}
+                  className="whitespace-nowrap flex items-center"
                 >
                   {label}
                 </button>

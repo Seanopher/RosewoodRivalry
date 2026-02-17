@@ -32,8 +32,8 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
   // Calculate this week's games (last 7 days)
   const oneWeekAgo = new Date();
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-  
-  const thisWeeksGames = games.filter(game => 
+
+  const thisWeeksGames = games.filter(game =>
     new Date(game.played_at) >= oneWeekAgo
   );
 
@@ -44,7 +44,7 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
       ...game.team1_player_names,
       ...game.team2_player_names
     ])).size,
-    averageScore: thisWeeksGames.length > 0 
+    averageScore: thisWeeksGames.length > 0
       ? Math.round((thisWeeksGames.reduce((sum, game) => sum + game.team1_score + game.team2_score, 0)) / thisWeeksGames.length)
       : 0
   };
@@ -52,7 +52,7 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
   // Calculate total games played and find qualified players (33.3% participation)
   const totalGames = games.length;
   const minimumGamesRequired = Math.ceil(totalGames * 0.333); // 33.3% of total games
-  
+
   // Find all qualified players with highest win percentage
   const qualifiedPlayers = [...players]
     .filter(player => player.games_played >= minimumGamesRequired && player.games_played > 0)
@@ -60,11 +60,11 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
 
   // Calculate wins this week by player
   const weeklyWinsByPlayer: { [playerName: string]: number } = {};
-  
+
   thisWeeksGames.forEach(game => {
     const winningTeam = game.winner_team;
     const winningPlayers = winningTeam === 1 ? game.team1_player_names : game.team2_player_names;
-    
+
     winningPlayers.forEach(playerName => {
       weeklyWinsByPlayer[playerName] = (weeklyWinsByPlayer[playerName] || 0) + 1;
     });
@@ -73,23 +73,23 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
 
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fadeIn">
       {/* Header */}
-      <div className="bg-white p-6 rounded-lg shadow text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Dashboard </h2>
-        <p className="text-gray-600">Welcome to the Rosewood Rivalry Game Tracker! Keep track of games, player stats, and weekly highlights all in one place!
+      <div className="p-6 rounded-lg" style={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}>
+        <h2 className="text-2xl font-bold mb-2" style={{ color: '#f8fafc' }}>Dashboard </h2>
+        <p style={{ color: '#94a3b8' }}>Welcome to the Rosewood Rivalry Game Tracker! Keep track of games, player stats, and weekly highlights all in one place!
         </p>
       </div>
 
       {/* Recent Games */}
       {games.length > 0 && (
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">⏰ Recent Games</h3>
+        <div className="p-6 rounded-lg" style={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}>
+          <h3 className="text-lg font-semibold mb-4" style={{ color: '#f8fafc' }}>⏰ Recent Games</h3>
           <div className="space-y-4">
             {games.slice(0, 3).map((game) => (
-              <div key={game.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+              <div key={game.id} className="rounded-lg p-4 transition-colors" style={{ border: '1px solid #334155', backgroundColor: '#0f172a' }}>
                 <div className="flex items-center justify-between mb-2">
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm" style={{ color: '#94a3b8' }}>
                     Game #{game.id} • {new Date(game.played_at).toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',
@@ -102,17 +102,17 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
                     Team {game.winner_team} Wins!
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-3 gap-4 items-center">
                   {/* Team 1 */}
                   <div className="text-center">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium text-blue-600">Team 1</span>
-                      <span className={`text-lg font-bold ${game.team1_score > game.team2_score ? 'text-green-600' : 'text-gray-600'}`}>
+                      <span className="text-sm font-medium" style={{ color: '#60a5fa' }}>Team 1</span>
+                      <span className={`text-lg font-bold ${game.team1_score > game.team2_score ? 'text-green-600' : ''}`} style={game.team1_score <= game.team2_score ? { color: '#64748b' } : {}}>
                         {game.team1_score}
                       </span>
                     </div>
-                    <div className="text-xs text-gray-600 space-y-0.5">
+                    <div className="text-xs space-y-0.5" style={{ color: '#94a3b8' }}>
                       {game.team1_player_names.map((name, idx) => (
                         <div key={idx}>{name}</div>
                       ))}
@@ -121,8 +121,8 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
 
                   {/* VS */}
                   <div className="text-center">
-                    <div className="text-gray-400 font-medium text-sm">VS</div>
-                    <div className="text-xs text-gray-500 mt-1">
+                    <div className="font-medium text-sm" style={{ color: '#475569' }}>VS</div>
+                    <div className="text-xs mt-1" style={{ color: '#64748b' }}>
                       {Math.abs(game.team1_score - game.team2_score)} pts
                     </div>
                   </div>
@@ -130,12 +130,12 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
                   {/* Team 2 */}
                   <div className="text-center">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium text-red-600">Team 2</span>
-                      <span className={`text-lg font-bold ${game.team2_score > game.team1_score ? 'text-green-600' : 'text-gray-600'}`}>
+                      <span className="text-sm font-medium" style={{ color: '#f43f5e' }}>Team 2</span>
+                      <span className={`text-lg font-bold ${game.team2_score > game.team1_score ? 'text-green-600' : ''}`} style={game.team2_score <= game.team1_score ? { color: '#64748b' } : {}}>
                         {game.team2_score}
                       </span>
                     </div>
-                    <div className="text-xs text-gray-600 space-y-0.5">
+                    <div className="text-xs space-y-0.5" style={{ color: '#94a3b8' }}>
                       {game.team2_player_names.map((name, idx) => (
                         <div key={idx}>{name}</div>
                       ))}
@@ -147,7 +147,7 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
           </div>
           {games.length > 3 && (
             <div className="text-center mt-4">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm" style={{ color: '#64748b' }}>
                 Showing 3 of {games.length} games • View all in Game History
               </p>
             </div>
@@ -156,67 +156,69 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
       )}
 
       {/* The Rivalry */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">⚔️ The Rivalry</h3>
-        <p className="text-sm text-gray-600 mb-4">The Orchard vs Dreher - Historic Matchup</p>
-        
+      <div className="p-6 rounded-lg" style={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}>
+        <h3 className="text-lg font-semibold mb-4" style={{ color: '#f8fafc' }}>⚔️ The Rivalry</h3>
+        <p className="text-sm mb-4" style={{ color: '#94a3b8' }}>The Orchard vs Dreher - Historic Matchup</p>
+
         {rivalryLoading ? (
           <div className="text-center py-4">
-            <div className="text-gray-500">Loading rivalry stats...</div>
+            <div style={{ color: '#94a3b8' }}>Loading rivalry stats...</div>
           </div>
         ) : rivalryStats ? (
           <div className="space-y-6">
             {/* Overall Stats - Side by Side */}
             <div className="grid grid-cols-2 gap-6">
               {/* Orchard Stats */}
-              <div className={`text-center p-4 rounded-lg ${
-                rivalryStats.orchard_wins > rivalryStats.dreher_wins ? 'bg-green-50' : 'bg-red-50'
-              }`}>
+              <div className="text-center p-4 rounded-lg" style={{
+                backgroundColor: rivalryStats.orchard_wins > rivalryStats.dreher_wins ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                border: `1px solid ${rivalryStats.orchard_wins > rivalryStats.dreher_wins ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`
+              }}>
                 <div className="text-4xl mb-2 h-12 flex items-center justify-center">
                   {rivalryStats.orchard_wins > rivalryStats.dreher_wins ? '👑' : '\u00A0'}
                 </div>
                 <div className={`text-3xl font-bold ${
                   rivalryStats.orchard_wins > rivalryStats.dreher_wins ? 'text-green-600' : 'text-red-600'
                 }`}>{rivalryStats.orchard_wins}</div>
-                <div className="text-sm font-bold text-black-600 mb-2">The Orchard</div>
+                <div className="text-sm font-bold mb-2" style={{ color: '#f1f5f9' }}>The Orchard</div>
                 <div className={`text-xs mb-3 ${
                   rivalryStats.orchard_wins > rivalryStats.dreher_wins ? 'text-green-600' : 'text-red-600'
                 }`}>{rivalryStats.orchard_win_percentage.toFixed(1)}%</div>
                 <div className={`text-lg font-semibold ${
                   rivalryStats.orchard_wins > rivalryStats.dreher_wins ? 'text-green-600' : 'text-red-600'
                 }`}>{rivalryStats.total_orchard_points}</div>
-                <div className="text-xs text-gray-600">Total Points</div>
+                <div className="text-xs" style={{ color: '#94a3b8' }}>Total Points</div>
               </div>
-              
+
               {/* Dreher Stats */}
-              <div className={`text-center p-4 rounded-lg ${
-                rivalryStats.dreher_wins > rivalryStats.orchard_wins ? 'bg-green-50' : 'bg-red-50'
-              }`}>
+              <div className="text-center p-4 rounded-lg" style={{
+                backgroundColor: rivalryStats.dreher_wins > rivalryStats.orchard_wins ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                border: `1px solid ${rivalryStats.dreher_wins > rivalryStats.orchard_wins ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`
+              }}>
                 <div className="text-4xl mb-2 h-12 flex items-center justify-center">
                   {rivalryStats.dreher_wins > rivalryStats.orchard_wins ? '👑' : '\u00A0'}
                 </div>
                 <div className={`text-3xl font-bold ${
                   rivalryStats.dreher_wins > rivalryStats.orchard_wins ? 'text-green-600' : 'text-red-600'
                 }`}>{rivalryStats.dreher_wins}</div>
-                <div className="text-sm font-bold text-black-600 mb-2">Dreher</div>
+                <div className="text-sm font-bold mb-2" style={{ color: '#f1f5f9' }}>Dreher</div>
                 <div className={`text-xs mb-3 ${
                   rivalryStats.dreher_wins > rivalryStats.orchard_wins ? 'text-green-600' : 'text-red-600'
                 }`}>{rivalryStats.dreher_win_percentage.toFixed(1)}%</div>
                 <div className={`text-lg font-semibold ${
                   rivalryStats.dreher_wins > rivalryStats.orchard_wins ? 'text-green-600' : 'text-red-600'
                 }`}>{rivalryStats.total_dreher_points}</div>
-                <div className="text-xs text-gray-600">Total Points</div>
+                <div className="text-xs" style={{ color: '#94a3b8' }}>Total Points</div>
               </div>
             </div>
 
             {/* Point Differential */}
-            <div className="text-center p-4 bg-gray-50 rounded-lg">
-              <div className="text-lg font-semibold text-gray-900">
-                Point Differential: 
+            <div className="text-center p-4 rounded-lg" style={{ backgroundColor: '#0f172a', border: '1px solid #334155' }}>
+              <div className="text-lg font-semibold" style={{ color: '#f1f5f9' }}>
+                Point Differential:
                 <span className={`ml-2 ${rivalryStats.point_differential >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {rivalryStats.point_differential >= 0 ? '+' : ''}{rivalryStats.point_differential}
                 </span>
-                <span className="text-sm text-gray-600 ml-1">
+                <span className="text-sm ml-1" style={{ color: '#94a3b8' }}>
                   ({rivalryStats.point_differential >= 0 ? 'Orchard' : 'Dreher'} advantage)
                 </span>
               </div>
@@ -225,26 +227,25 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
             {/* Recent Games */}
             {rivalryStats.recent_games.length > 0 && (
               <div>
-                <h4 className="font-medium text-gray-900 mb-3">Recent Rivalry Games</h4>
+                <h4 className="font-medium mb-3" style={{ color: '#f1f5f9' }}>Recent Rivalry Games</h4>
                 <div className="space-y-2">
                   {rivalryStats.recent_games.map((game) => (
-                    <div key={game.id} className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                    <div key={game.id} className="flex items-center justify-between p-3 rounded" style={{ backgroundColor: '#0f172a', border: '1px solid #334155' }}>
                       <div className="flex items-center space-x-4">
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm" style={{ color: '#94a3b8' }}>
                           {new Date(game.played_at).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric'
                           })}
                         </div>
                         <div className="text-sm">
-                          <span className="font-medium">{game.orchard_score}-{game.dreher_score}</span>
+                          <span className="font-medium" style={{ color: '#f1f5f9' }}>{game.orchard_score}-{game.dreher_score}</span>
                         </div>
                       </div>
-                      <div className={`text-sm font-medium px-2 py-1 rounded ${
-                        game.winner === 'Orchard' 
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}>
+                      <div className={`text-sm font-medium px-2 py-1 rounded`} style={{
+                        backgroundColor: game.winner === 'Orchard' ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                        color: game.winner === 'Orchard' ? '#4ade80' : '#f87171'
+                      }}>
                         {game.winner}
                       </div>
                     </div>
@@ -254,51 +255,50 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
             )}
           </div>
         ) : (
-          <div className="text-center text-gray-500 py-4">
+          <div className="text-center py-4" style={{ color: '#94a3b8' }}>
             No rivalry games found
           </div>
         )}
       </div>
 
       {/* Top Winners */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          👑 All-Time Win Rate Leaders 
+      <div className="p-6 rounded-lg" style={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}>
+        <h3 className="text-lg font-semibold mb-2" style={{ color: '#f8fafc' }}>
+          👑 All-Time Win Rate Leaders
         </h3>
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm mb-4" style={{ color: '#94a3b8' }}>
           All players with at least {minimumGamesRequired} games played ({Math.round((minimumGamesRequired / totalGames) * 100)}% participation)
         </p>
         {qualifiedPlayers.length > 0 ? (
           <div className="space-y-3">
             {qualifiedPlayers.map((player, index) => {
-              // Top 3 get special colors and medal emojis
-              const rankColors = [
-                { bg: 'bg-yellow-50', border: 'border-yellow-200', icon: 'bg-yellow-500', badge: 'bg-yellow-100 text-yellow-800' },
-                { bg: 'bg-gray-50', border: 'border-gray-200', icon: 'bg-gray-500', badge: 'bg-gray-100 text-gray-800' },
-                { bg: 'bg-orange-50', border: 'border-orange-200', icon: 'bg-orange-500', badge: 'bg-orange-100 text-orange-800' }
+              // Top 3 get special colors
+              const rankStyles = [
+                { bg: 'rgba(234, 179, 8, 0.1)', border: 'rgba(234, 179, 8, 0.3)', badgeBg: 'rgba(234, 179, 8, 0.15)', badgeColor: '#fde047' },
+                { bg: 'rgba(148, 163, 184, 0.1)', border: 'rgba(148, 163, 184, 0.3)', badgeBg: 'rgba(148, 163, 184, 0.15)', badgeColor: '#cbd5e1' },
+                { bg: 'rgba(249, 115, 22, 0.1)', border: 'rgba(249, 115, 22, 0.3)', badgeBg: 'rgba(249, 115, 22, 0.15)', badgeColor: '#fdba74' }
               ];
-              // Default styling for ranks 4+
-              const defaultColors = { bg: 'bg-white', border: 'border-gray-200', icon: 'bg-blue-500', badge: 'bg-blue-100 text-blue-800' };
-              const colors = index < 3 ? rankColors[index] : defaultColors;
+              const defaultStyle = { bg: '#0f172a', border: '#334155', badgeBg: 'rgba(59, 130, 246, 0.15)', badgeColor: '#60a5fa' };
+              const style = index < 3 ? rankStyles[index] : defaultStyle;
               const rankEmojis = ['🥇', '🥈', '🥉'];
 
               return (
-                <div key={player.id} className={`flex items-center p-3 ${colors.bg} rounded-lg border ${colors.border}`}>
+                <div key={player.id} className="flex items-center p-3 rounded-lg" style={{ backgroundColor: style.bg, border: `1px solid ${style.border}` }}>
                   <div className="flex-shrink-0 mr-3 w-10 flex items-center justify-center">
                     {index < 3 ? (
                       <span className="text-2xl">{rankEmojis[index]}</span>
                     ) : (
-                      <span className="text-xl font-bold text-gray-700 rankpadding">{index + 1}</span>
+                      <span className="text-xl font-bold rankpadding" style={{ color: '#cbd5e1' }}>{index + 1}</span>
                     )}
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">{player.name}</p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm font-medium" style={{ color: '#f1f5f9' }}>{player.name}</p>
+                    <p className="text-sm" style={{ color: '#94a3b8' }}>
                       {player.games_won}/{player.games_played} games ({Math.round((player.games_played / totalGames) * 100)}% participation)
                     </p>
                   </div>
                   <div className="flex-shrink-0">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full font-medium ${colors.badge}`}>
+                    <span className="inline-flex items-center px-2 py-1 rounded-full font-medium" style={{ backgroundColor: style.badgeBg, color: style.badgeColor }}>
                       {player.win_percentage > 1 ? Math.round(player.win_percentage) : Math.round(player.win_percentage * 100)}%
                     </span>
                   </div>
@@ -307,18 +307,18 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
             })}
           </div>
         ) : (
-          <p className="text-gray-500 text-center py-4">
+          <p className="text-center py-4" style={{ color: '#94a3b8' }}>
             No qualified players yet. Players need at least {minimumGamesRequired} games played to qualify.
           </p>
         )}
       </div>
 
       {/* Recent Performers */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+      <div className="p-6 rounded-lg" style={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}>
+        <h3 className="text-lg font-semibold mb-2" style={{ color: '#f8fafc' }}>
           🔥 Recent Performers
         </h3>
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm mb-4" style={{ color: '#94a3b8' }}>
           Top 3 players based on win rate in their last 10 games (minimum {minimumGamesRequired} total games)
         </p>
         {(() => {
@@ -328,24 +328,24 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
             recentWins: number;
             recentWinPercentage: number;
           };
-          
+
           const recentPerformers: RecentPerformer[] = players
             .filter(player => player.games_played >= minimumGamesRequired && player.games_played > 0)
             .map(player => {
               // Get last 10 games for this player
-              const playerGames = games.filter(game => 
-                game.team1_player_names.includes(player.name) || 
+              const playerGames = games.filter(game =>
+                game.team1_player_names.includes(player.name) ||
                 game.team2_player_names.includes(player.name)
               ).slice(0, 10); // Take most recent 10 games
-              
+
               if (playerGames.length === 0) return null;
-              
+
               // Calculate wins in recent games
               const recentWins = playerGames.filter(game => {
                 const isOnTeam1 = game.team1_player_names.includes(player.name);
                 return (isOnTeam1 && game.winner_team === 1) || (!isOnTeam1 && game.winner_team === 2);
               }).length;
-              
+
               return {
                 ...player,
                 recentGamesPlayed: playerGames.length,
@@ -357,37 +357,38 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
             .sort((a, b) => b.recentWinPercentage - a.recentWinPercentage)
             .slice(0, 3);
 
+          const rankStyles = [
+            { bg: 'rgba(234, 179, 8, 0.1)', border: 'rgba(234, 179, 8, 0.3)', iconBg: '#eab308', badgeBg: 'rgba(234, 179, 8, 0.15)', badgeColor: '#fde047' },
+            { bg: 'rgba(148, 163, 184, 0.1)', border: 'rgba(148, 163, 184, 0.3)', iconBg: '#64748b', badgeBg: 'rgba(148, 163, 184, 0.15)', badgeColor: '#cbd5e1' },
+            { bg: 'rgba(249, 115, 22, 0.1)', border: 'rgba(249, 115, 22, 0.3)', iconBg: '#f97316', badgeBg: 'rgba(249, 115, 22, 0.15)', badgeColor: '#fdba74' }
+          ];
+
           return recentPerformers.length > 0 ? (
             <div className="space-y-3">
               {recentPerformers.map((player, index) => {
-                const rankColors = [
-                  { bg: 'bg-yellow-50', border: 'border-yellow-200', icon: 'bg-yellow-500', badge: 'bg-yellow-100 text-yellow-800' },
-                  { bg: 'bg-gray-50', border: 'border-gray-200', icon: 'bg-gray-500', badge: 'bg-gray-100 text-gray-800' },
-                  { bg: 'bg-orange-50', border: 'border-orange-200', icon: 'bg-orange-500', badge: 'bg-orange-100 text-orange-800' }
-                ];
-                const colors = rankColors[index] || rankColors[2];
+                const style = rankStyles[index] || rankStyles[2];
                 const rankEmojis = ['🔥', '⚡', '💪'];
-                
+
                 return (
-                  <div key={player.id} className={`flex items-center p-3 ${colors.bg} rounded-lg border ${colors.border}`}>
+                  <div key={player.id} className="flex items-center p-3 rounded-lg" style={{ backgroundColor: style.bg, border: `1px solid ${style.border}` }}>
                     <div className="flex-shrink-0 mr-3">
                       <span className="text-2xl">{rankEmojis[index]}</span>
                     </div>
                     <div className="flex-shrink-0">
-                      <div className={`w-10 h-10 ${colors.icon} rounded-full flex items-center justify-center`}>
-                        <span className="text-white font-bold text-lg">
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: style.iconBg }}>
+                        <span className="font-bold text-lg" style={{ color: '#f8fafc' }}>
                           {player.name.charAt(0).toUpperCase()}
                         </span>
                       </div>
                     </div>
                     <div className="ml-3 flex-1">
-                      <p className="text-sm font-medium text-gray-900">{player.name}</p>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm font-medium" style={{ color: '#f1f5f9' }}>{player.name}</p>
+                      <p className="text-sm" style={{ color: '#94a3b8' }}>
                         {player.recentWins}/{player.recentGamesPlayed} in last {player.recentGamesPlayed} games
                       </p>
                     </div>
                     <div className="flex-shrink-0">
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${colors.badge}`}>
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: style.badgeBg, color: style.badgeColor }}>
                         {Math.round(player.recentWinPercentage)}%
                       </span>
                     </div>
@@ -396,7 +397,7 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
               })}
             </div>
           ) : (
-            <p className="text-gray-500 text-center py-4">
+            <p className="text-center py-4" style={{ color: '#94a3b8' }}>
               No recent performers yet. Players need at least {minimumGamesRequired} total games to qualify.
             </p>
           );
@@ -405,8 +406,8 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
 
       {/* Games Played Bar Chart */}
       {players.length > 0 && (
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">📊 Games Played & Win Percentage</h3>
+        <div className="p-6 rounded-lg" style={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}>
+          <h3 className="text-lg font-semibold mb-4" style={{ color: '#f8fafc' }}>📊 Games Played & Win Percentage</h3>
           <div style={{ width: '100%', height: '320px' }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
@@ -419,12 +420,12 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
                   .sort((a, b) => {
                     const totalGamesA = a.wins + a.losses;
                     const totalGamesB = b.wins + b.losses;
-                    
+
                     // First sort by total games (descending)
                     if (totalGamesB !== totalGamesA) {
                       return totalGamesB - totalGamesA;
                     }
-                    
+
                     // If same total games, sort by wins (descending)
                     return b.wins - a.wins;
                   })
@@ -436,21 +437,23 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
                   bottom: 25,
                 }}
               >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="name" 
-                  tick={{ fontSize: 12 }}
+                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                <XAxis
+                  dataKey="name"
+                  tick={{ fontSize: 12, fill: '#94a3b8' }}
                   interval={0}
                   angle={-45}
                   textAnchor="end"
                   height={60}
                 />
-                <YAxis 
+                <YAxis
                   width={30}
-                  tick={{ fontSize: 10 }}
-                  label={{ value: 'Games Played', angle: -90, position: 'insideLeft', style: { fontSize: '10px' } }}
+                  tick={{ fontSize: 10, fill: '#94a3b8' }}
+                  label={{ value: 'Games Played', angle: -90, position: 'insideLeft', style: { fontSize: '10px', fill: '#94a3b8' } }}
                 />
-                <Tooltip 
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '0.5rem', color: '#f1f5f9' }}
+                  labelStyle={{ color: '#f1f5f9' }}
                   labelFormatter={(name) => `Player: ${name}`}
                   formatter={(value, name) => {
                     if (name === 'wins') return [value, 'Wins'];
@@ -458,16 +461,16 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
                     return [value, name];
                   }}
                 />
-                <Bar 
-                  dataKey="wins" 
+                <Bar
+                  dataKey="wins"
                   stackId="games"
-                  fill="#22C55E" 
+                  fill="#22C55E"
                   radius={[0, 0, 0, 0]}
                 />
-                <Bar 
-                  dataKey="losses" 
+                <Bar
+                  dataKey="losses"
                   stackId="games"
-                  fill="#EF4444" 
+                  fill="#EF4444"
                   radius={[4, 4, 0, 0]}
                 />
               </BarChart>
@@ -478,24 +481,24 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
 
 
       {/* This Week's Summary */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">📅 This Week's Summary</h3>
+      <div className="p-6 rounded-lg" style={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}>
+        <h3 className="text-lg font-semibold mb-4" style={{ color: '#f8fafc' }}>📅 This Week's Summary</h3>
         <div className="space-y-3">
           <div className="flex justify-between">
-            <span className="text-gray-600">🎲 Games Played:</span>
-            <span className="font-semibold">{weeklyStats.totalGames}</span>
+            <span style={{ color: '#94a3b8' }}>🎲 Games Played:</span>
+            <span className="font-semibold" style={{ color: '#f1f5f9' }}>{weeklyStats.totalGames}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-600">🤼 Active Players:</span>
-            <span className="font-semibold">{weeklyStats.totalPlayers}</span>
+            <span style={{ color: '#94a3b8' }}>🤼 Active Players:</span>
+            <span className="font-semibold" style={{ color: '#f1f5f9' }}>{weeklyStats.totalPlayers}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-600">🥤 Average Total PPG:</span>
-            <span className="font-semibold">{weeklyStats.averageScore}</span>
+            <span style={{ color: '#94a3b8' }}>🥤 Average Total PPG:</span>
+            <span className="font-semibold" style={{ color: '#f1f5f9' }}>{weeklyStats.averageScore}</span>
           </div>
           {thisWeeksGames.length > 0 && (
-            <div className="pt-2 border-t">
-              <p className="text-sm text-gray-600">
+            <div className="pt-2" style={{ borderTop: '1px solid #334155' }}>
+              <p className="text-sm" style={{ color: '#94a3b8' }}>
                 Most Recent: {new Date(thisWeeksGames[0].played_at).toLocaleDateString()}
               </p>
             </div>
@@ -504,20 +507,20 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
       </div>
 
       {/* Overall Statistics */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Overall Statistics</h3>
+      <div className="p-6 rounded-lg" style={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}>
+        <h3 className="text-lg font-semibold mb-4" style={{ color: '#f8fafc' }}>Overall Statistics</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="text-center">
+          <div className="text-center p-4 rounded-lg" style={{ backgroundColor: '#0f172a', border: '1px solid #334155' }}>
             <p className="text-3xl font-bold text-green-600">{games.length}</p>
-            <p className="text-sm text-gray-600 mt-1">Total Games</p>
+            <p className="text-sm mt-1" style={{ color: '#94a3b8' }}>Total Games</p>
           </div>
-          <div className="text-center">
+          <div className="text-center p-4 rounded-lg" style={{ backgroundColor: '#0f172a', border: '1px solid #334155' }}>
             <p className="text-3xl font-bold text-blue-600">{players.length}</p>
-            <p className="text-sm text-gray-600 mt-1">Total Players</p>
+            <p className="text-sm mt-1" style={{ color: '#94a3b8' }}>Total Players</p>
           </div>
-          <div className="text-center">
+          <div className="text-center p-4 rounded-lg" style={{ backgroundColor: '#0f172a', border: '1px solid #334155' }}>
             <p className="text-3xl font-bold text-purple-600">{weeklyStats.totalGames}</p>
-            <p className="text-sm text-gray-600 mt-1">Games played this week</p>
+            <p className="text-sm mt-1" style={{ color: '#94a3b8' }}>Games played this week</p>
           </div>
         </div>
       </div>

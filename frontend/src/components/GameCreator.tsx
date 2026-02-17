@@ -12,11 +12,11 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
   const [team1Player1, setTeam1Player1] = useState<number | null>(null);
   const [team1Player2, setTeam1Player2] = useState<number | null>(null);
   const [team1Player3, setTeam1Player3] = useState<number | null>(null);
-  
+
   const [team2Player1, setTeam2Player1] = useState<number | null>(null);
   const [team2Player2, setTeam2Player2] = useState<number | null>(null);
   const [team2Player3, setTeam2Player3] = useState<number | null>(null);
-  
+
   const [team1Score, setTeam1Score] = useState<string>('');
   const [team2Score, setTeam2Score] = useState<string>('');
   const [location, setLocation] = useState<string>('');
@@ -32,17 +32,17 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
   // Get available players for a dropdown (excluding already selected players, except the current selection)
   const getAvailablePlayersFor = (currentSelection: number | null) => {
     const selectedPlayers = getSelectedPlayers();
-    return players.filter(player => 
+    return players.filter(player =>
       !selectedPlayers.includes(player.id) || player.id === currentSelection
     );
   };
 
   const handleCreateGame = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const team1Players = [team1Player1, team1Player2, team1Player3].filter(id => id !== null) as number[];
     const team2Players = [team2Player1, team2Player2, team2Player3].filter(id => id !== null) as number[];
-    
+
     if (team1Players.length !== 3 || team2Players.length !== 3) {
       setError('Each team must have exactly 3 players');
       return;
@@ -72,7 +72,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
     try {
       setIsCreating(true);
       setError(null);
-      
+
       const gameData: GameCreate = {
         team1_score: team1ScoreNum,
         team2_score: team2ScoreNum,
@@ -80,10 +80,10 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
         team2_players: team2Players,
         location: location.trim() || undefined,
       };
-      
+
       const newGame = await gameAPI.createGame(gameData);
       onGameCreated(newGame);
-      
+
       // Reset form
       setTeam1Player1(null);
       setTeam1Player2(null);
@@ -110,39 +110,65 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
   const team2Players = [team2Player1, team2Player2, team2Player3].filter(id => id !== null);
   const canCreateGame = team1Players.length === 3 && team2Players.length === 3 && !isCreating;
 
+  const selectStyle = {
+    display: 'block',
+    width: '100%',
+    borderRadius: '0.375rem',
+    border: '1px solid #334155',
+    backgroundColor: '#0f172a',
+    color: '#f1f5f9',
+    padding: '0.5rem 1rem',
+  };
+
+  const inputStyle = {
+    display: 'block',
+    width: '100%',
+    borderRadius: '0.375rem',
+    border: '1px solid #334155',
+    backgroundColor: '#0f172a',
+    color: '#f1f5f9',
+    padding: '0.5rem 1rem',
+  };
+
+  const labelStyle = {
+    display: 'block',
+    fontSize: '0.875rem',
+    fontWeight: 500,
+    color: '#cbd5e1',
+    marginBottom: '0.5rem',
+  };
+
   if (players.length < 6) {
     return (
-      <div className="bg-white shadow rounded-lg p-6">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Create New Game</h2>
-        <div className="text-center text-gray-500 py-8">
-          <p className="text-lg">You need at least 6 players to create a game.</p>
-          <p className="text-sm mt-2">Go to the New Player tab to add more players.</p>
+      <div className="rounded-lg p-6" style={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}>
+        <h2 className="text-lg font-medium mb-4" style={{ color: '#f1f5f9' }}>Create New Game</h2>
+        <div className="text-center py-8">
+          <p className="text-lg" style={{ color: '#94a3b8' }}>You need at least 6 players to create a game.</p>
+          <p className="text-sm mt-2" style={{ color: '#64748b' }}>Go to the New Player tab to add more players.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white shadow rounded-lg p-6">
-        <h2 className="text-lg font-medium text-gray-900 mb-6">Create New Game</h2>
-        
+    <div className="space-y-6 animate-fadeIn">
+      <div className="rounded-lg p-6" style={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}>
+        <h2 className="text-lg font-medium mb-6" style={{ color: '#f1f5f9' }}>Create New Game</h2>
+
         <form onSubmit={handleCreateGame} className="space-y-6">
           {/* Team Selection */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Team 1 */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium text-blue-600">Team 1</h3>
-              
+              <h3 className="text-lg font-medium" style={{ color: '#60a5fa' }}>Team 1</h3>
+
               {/* Player 1 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Player 1
-                </label>
+                <label style={labelStyle}>Player 1</label>
                 <select
                   value={team1Player1 || ''}
                   onChange={(e) => setTeam1Player1(e.target.value ? parseInt(e.target.value) : null)}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  style={selectStyle}
                 >
                   <option value="">Select a player...</option>
                   {getAvailablePlayersFor(team1Player1).map(player => (
@@ -155,13 +181,11 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
 
               {/* Player 2 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Player 2
-                </label>
+                <label style={labelStyle}>Player 2</label>
                 <select
                   value={team1Player2 || ''}
                   onChange={(e) => setTeam1Player2(e.target.value ? parseInt(e.target.value) : null)}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  style={selectStyle}
                 >
                   <option value="">Select a player...</option>
                   {getAvailablePlayersFor(team1Player2).map(player => (
@@ -174,13 +198,11 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
 
               {/* Player 3 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Player 3
-                </label>
+                <label style={labelStyle}>Player 3</label>
                 <select
                   value={team1Player3 || ''}
                   onChange={(e) => setTeam1Player3(e.target.value ? parseInt(e.target.value) : null)}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  style={selectStyle}
                 >
                   <option value="">Select a player...</option>
                   {getAvailablePlayersFor(team1Player3).map(player => (
@@ -191,24 +213,22 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
                 </select>
               </div>
 
-              <div className="text-sm text-gray-500">
+              <div className="text-sm" style={{ color: '#94a3b8' }}>
                 Selected: {team1Players.length}/3 players
               </div>
             </div>
 
             {/* Team 2 */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium text-red-600">Team 2</h3>
-              
+              <h3 className="text-lg font-medium" style={{ color: '#f43f5e' }}>Team 2</h3>
+
               {/* Player 1 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Player 1
-                </label>
+                <label style={labelStyle}>Player 1</label>
                 <select
                   value={team2Player1 || ''}
                   onChange={(e) => setTeam2Player1(e.target.value ? parseInt(e.target.value) : null)}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+                  style={selectStyle}
                 >
                   <option value="">Select a player...</option>
                   {getAvailablePlayersFor(team2Player1).map(player => (
@@ -221,13 +241,11 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
 
               {/* Player 2 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Player 2
-                </label>
+                <label style={labelStyle}>Player 2</label>
                 <select
                   value={team2Player2 || ''}
                   onChange={(e) => setTeam2Player2(e.target.value ? parseInt(e.target.value) : null)}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+                  style={selectStyle}
                 >
                   <option value="">Select a player...</option>
                   {getAvailablePlayersFor(team2Player2).map(player => (
@@ -240,13 +258,11 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
 
               {/* Player 3 */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Player 3
-                </label>
+                <label style={labelStyle}>Player 3</label>
                 <select
                   value={team2Player3 || ''}
                   onChange={(e) => setTeam2Player3(e.target.value ? parseInt(e.target.value) : null)}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+                  style={selectStyle}
                 >
                   <option value="">Select a player...</option>
                   {getAvailablePlayersFor(team2Player3).map(player => (
@@ -257,7 +273,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
                 </select>
               </div>
 
-              <div className="text-sm text-gray-500">
+              <div className="text-sm" style={{ color: '#94a3b8' }}>
                 Selected: {team2Players.length}/3 players
               </div>
             </div>
@@ -265,22 +281,22 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
 
           {/* Selected Teams Summary */}
           {(team1Players.length > 0 || team2Players.length > 0) && (
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h4 className="font-medium text-gray-900 mb-3">Current Teams</h4>
+            <div className="rounded-lg p-4" style={{ backgroundColor: '#0f172a', border: '1px solid #334155' }}>
+              <h4 className="font-medium mb-3" style={{ color: '#f1f5f9' }}>Current Teams</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="text-blue-600 font-medium">Team 1:</span>
+                  <span className="font-medium" style={{ color: '#60a5fa' }}>Team 1:</span>
                   <ul className="mt-1 space-y-1">
                     {team1Players.map(id => (
-                      <li key={id} className="text-gray-700">{getPlayerName(id)}</li>
+                      <li key={id} style={{ color: '#cbd5e1' }}>{getPlayerName(id)}</li>
                     ))}
                   </ul>
                 </div>
                 <div>
-                  <span className="text-red-600 font-medium">Team 2:</span>
+                  <span className="font-medium" style={{ color: '#f43f5e' }}>Team 2:</span>
                   <ul className="mt-1 space-y-1">
                     {team2Players.map(id => (
-                      <li key={id} className="text-gray-700">{getPlayerName(id)}</li>
+                      <li key={id} style={{ color: '#cbd5e1' }}>{getPlayerName(id)}</li>
                     ))}
                   </ul>
                 </div>
@@ -291,28 +307,24 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
           {/* Scores */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Team 1 Score
-              </label>
+              <label style={labelStyle}>Team 1 Score</label>
               <input
                 type="number"
                 min="0"
                 value={team1Score}
                 onChange={(e) => setTeam1Score(e.target.value)}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                style={inputStyle}
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Team 2 Score
-              </label>
+              <label style={labelStyle}>Team 2 Score</label>
               <input
                 type="number"
                 min="0"
                 value={team2Score}
                 onChange={(e) => setTeam2Score(e.target.value)}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+                style={inputStyle}
                 required
               />
             </div>
@@ -320,27 +332,25 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
 
           {/* Location */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Location
-            </label>
+            <label style={labelStyle}>Location</label>
             <select
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              style={selectStyle}
             >
               <option value="">Select location...</option>
               <option value="Dreher">Dreher</option>
               <option value="King">King</option>
             </select>
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs" style={{ color: '#64748b' }}>
               Where was this game played?
             </p>
           </div>
 
           {/* Winner Preview */}
           {(team1Score !== '' || team2Score !== '') && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <div className="text-sm text-yellow-800">
+            <div className="rounded-lg p-4" style={{ backgroundColor: 'rgba(234, 179, 8, 0.08)', border: '1px solid rgba(234, 179, 8, 0.25)' }}>
+              <div className="text-sm" style={{ color: '#fde047' }}>
                 <strong>Winner:</strong>{' '}
                 {parseInt(team1Score) > parseInt(team2Score)
                   ? 'Team 1'
@@ -358,7 +368,7 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
           )}
 
           {error && (
-            <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
+            <div className="text-sm rounded-lg p-3" style={{ color: '#f87171', backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.25)' }}>
               {error}
             </div>
           )}
@@ -366,7 +376,18 @@ const GameCreator: React.FC<GameCreatorProps> = ({ players, onGameCreated }) => 
           <button
             type="submit"
             disabled={!canCreateGame}
-            className="w-full bg-green-600 text-white py-3 px-4 rounded-md font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            style={{
+              width: '100%',
+              backgroundColor: '#f43f5e',
+              color: '#f8fafc',
+              padding: '0.75rem 1rem',
+              borderRadius: '0.375rem',
+              fontWeight: 600,
+              border: 'none',
+              opacity: canCreateGame ? 1 : 0.5,
+              cursor: canCreateGame ? 'pointer' : 'not-allowed',
+              transition: 'all 0.15s ease',
+            }}
           >
             {isCreating ? 'Creating Game...' : 'Create Game'}
           </button>

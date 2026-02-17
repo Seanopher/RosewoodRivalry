@@ -14,7 +14,7 @@ const NewPlayer: React.FC<NewPlayerProps> = ({ onPlayerCreated }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!playerName.trim()) {
       setError('Player name is required');
       return;
@@ -28,12 +28,12 @@ const NewPlayer: React.FC<NewPlayerProps> = ({ onPlayerCreated }) => {
       const newPlayerData: PlayerCreate = {
         name: playerName.trim()
       };
-      
+
       const createdPlayer = await playerAPI.createPlayer(newPlayerData);
       onPlayerCreated(createdPlayer);
       setPlayerName('');
       setSuccess(`Player "${createdPlayer.name}" created successfully!`);
-      
+
       // Clear success message after 3 seconds
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
@@ -45,17 +45,17 @@ const NewPlayer: React.FC<NewPlayerProps> = ({ onPlayerCreated }) => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Add New Player</h2>
-          <p className="text-sm text-gray-600">Create a new player profile for the game tracker</p>
+    <div className="max-w-2xl mx-auto animate-fadeIn">
+      <div className="rounded-lg" style={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}>
+        <div className="px-6 py-4" style={{ borderBottom: '1px solid #334155' }}>
+          <h2 className="text-lg font-semibold" style={{ color: '#f1f5f9' }}>Add New Player</h2>
+          <p className="text-sm" style={{ color: '#94a3b8' }}>Create a new player profile for the game tracker</p>
         </div>
 
         <div className="p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="playerName" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="playerName" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#cbd5e1', marginBottom: '0.5rem' }}>
                 Player Name
               </label>
               <input
@@ -63,7 +63,14 @@ const NewPlayer: React.FC<NewPlayerProps> = ({ onPlayerCreated }) => {
                 id="playerName"
                 value={playerName}
                 onChange={(e) => setPlayerName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                style={{
+                  width: '100%',
+                  padding: '0.5rem 0.75rem',
+                  border: '1px solid #334155',
+                  borderRadius: '0.375rem',
+                  backgroundColor: '#0f172a',
+                  color: '#f1f5f9',
+                }}
                 placeholder="Enter player name..."
                 disabled={isSubmitting}
                 maxLength={100}
@@ -71,14 +78,14 @@ const NewPlayer: React.FC<NewPlayerProps> = ({ onPlayerCreated }) => {
             </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-md p-3">
-                <p className="text-sm text-red-600">{error}</p>
+              <div className="rounded-md p-3" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.25)' }}>
+                <p className="text-sm" style={{ color: '#f87171' }}>{error}</p>
               </div>
             )}
 
             {success && (
-              <div className="bg-green-50 border border-green-200 rounded-md p-3">
-                <p className="text-sm text-green-600">{success}</p>
+              <div className="rounded-md p-3" style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.25)' }}>
+                <p className="text-sm" style={{ color: '#4ade80' }}>{success}</p>
               </div>
             )}
 
@@ -86,7 +93,17 @@ const NewPlayer: React.FC<NewPlayerProps> = ({ onPlayerCreated }) => {
               <button
                 type="submit"
                 disabled={isSubmitting || !playerName.trim()}
-                className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                style={{
+                  backgroundColor: '#f43f5e',
+                  color: '#f8fafc',
+                  padding: '0.5rem 1.5rem',
+                  borderRadius: '0.375rem',
+                  fontWeight: 600,
+                  border: 'none',
+                  opacity: (isSubmitting || !playerName.trim()) ? 0.5 : 1,
+                  cursor: (isSubmitting || !playerName.trim()) ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
               >
                 {isSubmitting ? 'Creating...' : 'Create Player'}
               </button>
@@ -95,9 +112,9 @@ const NewPlayer: React.FC<NewPlayerProps> = ({ onPlayerCreated }) => {
         </div>
       </div>
 
-      <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-blue-900 mb-2">💡 Tips</h3>
-        <ul className="text-sm text-blue-700 space-y-1">
+      <div className="mt-6 rounded-lg p-4" style={{ backgroundColor: 'rgba(244, 63, 94, 0.08)', border: '1px solid rgba(244, 63, 94, 0.25)' }}>
+        <h3 className="text-sm font-medium mb-2" style={{ color: '#f43f5e' }}>💡 Tips</h3>
+        <ul className="text-sm space-y-1" style={{ color: '#94a3b8' }}>
           <li>Player names should be unique and easy to identify</li>
           <li>Once created, players will appear in the Player Stats tab</li>
           <li>Players can immediately participate in games after creation</li>
