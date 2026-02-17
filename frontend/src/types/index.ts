@@ -132,3 +132,66 @@ export interface RivalryStats {
   point_differential: number;
   recent_games: RivalryGame[];
 }
+
+// Golf Types
+export interface GolfHoleInput {
+  hole_number: number;
+  winner_team: number | null;
+}
+
+export interface GolfHoleResult {
+  hole_number: number;
+  winner_team: number | null;
+}
+
+export interface GolfRoundCreate {
+  team1_players: number[];
+  team2_players: number[];
+  course: string;
+  holes: GolfHoleInput[];
+}
+
+export interface GolfRoundUpdate {
+  team1_players?: number[];
+  team2_players?: number[];
+  course?: string;
+  holes?: GolfHoleInput[];
+}
+
+export interface GolfRound {
+  id: number;
+  course: string;
+  played_at: string;
+  team1_holes_won: number;
+  team2_holes_won: number;
+  halved_holes: number;
+  winner_team: number | null;
+  team1_players: Player[];
+  team2_players: Player[];
+  hole_results: GolfHoleResult[];
+}
+
+export interface GolfRoundSummary {
+  id: number;
+  course: string;
+  played_at: string;
+  team1_holes_won: number;
+  team2_holes_won: number;
+  halved_holes: number;
+  winner_team: number | null;
+  team1_player_names: string[];
+  team2_player_names: string[];
+}
+
+export interface GolfPlayerStats {
+  id: number;
+  name: string;
+  golf_rounds_played: number;
+  golf_rounds_won: number;
+  golf_rounds_lost: number;
+  golf_rounds_drawn: number;
+  golf_holes_won: number;
+  golf_holes_lost: number;
+  golf_win_percentage: number;
+  recent_rounds: GolfRoundSummary[];
+}

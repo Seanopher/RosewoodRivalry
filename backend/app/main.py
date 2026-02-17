@@ -1,12 +1,39 @@
 import os
+from sqlalchemy import text
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import players, games, teams, rivalry
+from app.routers import players, games, teams, rivalry, golf
 from app.database import engine, Base
 from app import models
 
-# Create database tables
+# Create database tables (creates new tables, but won't add columns to existing ones)
 Base.metadata.create_all(bind=engine)
+
+# Migration helper: add new golf columns to existing players table
+# Uses try/except per column to skip columns that already exist (avoids inspect() which can hang on Neon)
+def _run_migrations():
+    golf_columns = {
+        'golf_rounds_played': "INTEGER DEFAULT 0",
+        'golf_rounds_won': "INTEGER DEFAULT 0",
+        'golf_rounds_lost': "INTEGER DEFAULT 0",
+        'golf_rounds_drawn': "INTEGER DEFAULT 0",
+        'golf_holes_won': "INTEGER DEFAULT 0",
+        'golf_holes_lost': "INTEGER DEFAULT 0",
+        'golf_win_percentage': "FLOAT DEFAULT 0.0",
+    }
+    with engine.connect() as conn:
+        for col_name, col_type in golf_columns.items():
+            try:
+                conn.execute(text(f"ALTER TABLE players ADD COLUMN {col_name} {col_type}"))
+            except Exception:
+                conn.rollback()
+                continue
+        conn.commit()
+
+try:
+    _run_migrations()
+except Exception as e:
+    print(f"Migration warning (non-fatal): {e}")
 
 app = FastAPI(title="Rosewood Rivalry API")
 
@@ -42,3 +69,4 @@ app.include_router(players.router)
 app.include_router(games.router)
 app.include_router(teams.router)  # Teams API for team statistics
 app.include_router(rivalry.router)  # Rivalry API for Orchard vs Dreher
+app.include_router(golf.router)  # Golf match play tracking

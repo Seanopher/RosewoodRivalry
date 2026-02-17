@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Player, PlayerCreate, Game, GameCreate, GameUpdate, GameSummary, PlayerStats, Team, TeamStats, TeamsListResponse, RivalryStats } from '../types';
+import { Player, PlayerCreate, Game, GameCreate, GameUpdate, GameSummary, PlayerStats, Team, TeamStats, TeamsListResponse, RivalryStats, GolfRound, GolfRoundCreate, GolfRoundUpdate, GolfRoundSummary, GolfPlayerStats } from '../types';
 
 // API URL configuration for different environments
 const getApiBaseUrl = () => {
@@ -198,6 +198,50 @@ export const rivalryAPI = {
   // Get rivalry stats
   getRivalryStats: async (): Promise<RivalryStats> => {
     const response = await api.get('/rivalry/');
+    return response.data;
+  },
+};
+
+export const golfAPI = {
+  // Create a new golf round
+  createRound: async (data: GolfRoundCreate): Promise<GolfRound> => {
+    const response = await api.post('/golf/rounds/', data);
+    return response.data;
+  },
+
+  // Get all golf rounds
+  getAllRounds: async (limit?: number): Promise<GolfRoundSummary[]> => {
+    const params = limit ? { limit } : {};
+    const response = await api.get('/golf/rounds/', { params });
+    return response.data;
+  },
+
+  // Get a single golf round
+  getRound: async (roundId: number): Promise<GolfRound> => {
+    const response = await api.get(`/golf/rounds/${roundId}`);
+    return response.data;
+  },
+
+  // Update a golf round
+  updateRound: async (roundId: number, data: GolfRoundUpdate): Promise<GolfRound> => {
+    const response = await api.put(`/golf/rounds/${roundId}`, data);
+    return response.data;
+  },
+
+  // Delete a golf round
+  deleteRound: async (roundId: number): Promise<void> => {
+    await api.delete(`/golf/rounds/${roundId}`);
+  },
+
+  // Get golf leaderboard
+  getLeaderboard: async (): Promise<GolfPlayerStats[]> => {
+    const response = await api.get('/golf/stats/');
+    return response.data;
+  },
+
+  // Get golf stats for a specific player
+  getPlayerStats: async (playerId: number): Promise<GolfPlayerStats> => {
+    const response = await api.get(`/golf/stats/${playerId}`);
     return response.data;
   },
 };

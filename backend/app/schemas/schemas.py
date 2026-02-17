@@ -183,3 +183,115 @@ class RivalryStats(BaseModel):
     total_dreher_points: int
     point_differential: int
     recent_games: List[RivalryGame]
+
+# ---------------------------
+# Golf Schemas
+# ---------------------------
+class GolfHoleInput(BaseModel):
+    """Input for a single hole result"""
+    hole_number: int = Field(..., ge=1, le=18)
+    winner_team: Optional[int] = Field(None)  # 1, 2, or null for halved
+
+    @validator('winner_team')
+    def validate_winner_team(cls, v):
+        if v is not None and v not in (1, 2):
+            raise ValueError('winner_team must be 1, 2, or null')
+        return v
+
+class GolfRoundCreate(BaseModel):
+    """Create a new golf round"""
+    team1_players: List[int] = Field(..., min_items=2, max_items=2)
+    team2_players: List[int] = Field(..., min_items=2, max_items=2)
+    course: str = Field(..., min_length=1, max_length=200)
+    holes: List[GolfHoleInput] = Field(..., min_items=18, max_items=18)
+
+    @validator('team2_players')
+    def validate_unique_players(cls, v, values):
+        if 'team1_players' in values:
+            team1 = set(values['team1_players'])
+            team2 = set(v)
+            if team1.intersection(team2):
+                raise ValueError('Players cannot be on both teams')
+        return v
+
+    @validator('holes')
+    def validate_holes(cls, v):
+        hole_numbers = [h.hole_number for h in v]
+        if sorted(hole_numbers) != list(range(1, 19)):
+            raise ValueError('Must provide results for all 18 holes (1-18)')
+        return v
+
+class GolfRoundUpdate(BaseModel):
+    """Update an existing golf round"""
+    team1_players: Optional[List[int]] = Field(None, min_items=2, max_items=2)
+    team2_players: Optional[List[int]] = Field(None, min_items=2, max_items=2)
+    course: Optional[str] = Field(None, min_length=1, max_length=200)
+    holes: Optional[List[GolfHoleInput]] = Field(None, min_items=18, max_items=18)
+
+    @validator('team2_players')
+    def validate_unique_players(cls, v, values):
+        if v is not None and 'team1_players' in values and values['team1_players'] is not None:
+            team1 = set(values['team1_players'])
+            team2 = set(v)
+            if team1.intersection(team2):
+                raise ValueError('Players cannot be on both teams')
+        return v
+
+    @validator('holes')
+    def validate_holes(cls, v):
+        if v is not None:
+            hole_numbers = [h.hole_number for h in v]
+            if sorted(hole_numbers) != list(range(1, 19)):
+                raise ValueError('Must provide results for all 18 holes (1-18)')
+        return v
+
+class GolfHoleResultOut(BaseModel):
+    """Output for a single hole result"""
+    hole_number: int
+    winner_team: Optional[int]
+
+    model_config = {
+        "from_attributes": True
+    }
+
+class GolfRoundOut(BaseModel):
+    """Full golf round detail with players and hole results"""
+    id: int
+    course: str
+    played_at: datetime
+    team1_holes_won: int
+    team2_holes_won: int
+    halved_holes: int
+    winner_team: Optional[int]
+    team1_players: List[PlayerOut]
+    team2_players: List[PlayerOut]
+    hole_results: List[GolfHoleResultOut]
+
+    model_config = {
+        "from_attributes": True
+    }
+
+class GolfRoundSummary(BaseModel):
+    """Lightweight golf round for lists"""
+    id: int
+    course: str
+    played_at: datetime
+    team1_holes_won: int
+    team2_holes_won: int
+    halved_holes: int
+    winner_team: Optional[int]
+    team1_player_names: List[str]
+    team2_player_names: List[str]
+
+class GolfPlayerStats(BaseModel):
+    """Golf-specific stats for a player"""
+    id: int
+    name: str
+    golf_rounds_played: int
+    golf_rounds_won: int
+    golf_rounds_lost: int
+    golf_rounds_drawn: int
+    golf_holes_won: int
+    golf_holes_lost: int
+    golf_win_percentage: float
+    recent_rounds: List[GolfRoundSummary]
