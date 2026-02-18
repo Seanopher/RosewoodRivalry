@@ -77,7 +77,7 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
       {/* Header */}
       <div className="p-6 rounded-lg" style={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}>
         <h2 className="text-2xl font-bold mb-2" style={{ color: '#f8fafc' }}>Dashboard </h2>
-        <p style={{ color: '#94a3b8' }}>Welcome to the Rosewood Rivalry Game Tracker! Keep track of games, player stats, and weekly highlights all in one place!
+        <p style={{ color: '#94a3b8' }}>Welcome to the Rosewood Rivalry Game Tracker! Check out the newly implemented Golf tracker!
         </p>
       </div>
 
