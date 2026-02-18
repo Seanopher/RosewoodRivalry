@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Player, PlayerCreate, Game, GameCreate, GameUpdate, GameSummary, PlayerStats, Team, TeamStats, TeamsListResponse, RivalryStats, GolfRound, GolfRoundCreate, GolfRoundUpdate, GolfRoundSummary, GolfPlayerStats } from '../types';
+import { Player, PlayerCreate, Game, GameCreate, GameUpdate, GameSummary, PlayerStats, Team, TeamStats, TeamsListResponse, RivalryStats, GolfRound, GolfRoundCreate, GolfRoundUpdate, GolfRoundSummary, GolfPlayerStats, GolfCourseSearchResult, GolfCourseOut } from '../types';
 
 // API URL configuration for different environments
 const getApiBaseUrl = () => {
@@ -203,6 +203,18 @@ export const rivalryAPI = {
 };
 
 export const golfAPI = {
+  // Search for golf courses
+  searchCourses: async (query: string): Promise<GolfCourseSearchResult[]> => {
+    const response = await api.get('/golf/courses/search', { params: { q: query } });
+    return response.data;
+  },
+
+  // Get full course data (with tees and holes)
+  getCourse: async (apiId: number): Promise<GolfCourseOut> => {
+    const response = await api.get(`/golf/courses/${apiId}`);
+    return response.data;
+  },
+
   // Create a new golf round
   createRound: async (data: GolfRoundCreate): Promise<GolfRound> => {
     const response = await api.post('/golf/rounds/', data);

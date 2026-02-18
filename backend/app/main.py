@@ -21,10 +21,31 @@ def _run_migrations():
         'golf_holes_lost': "INTEGER DEFAULT 0",
         'golf_win_percentage': "FLOAT DEFAULT 0.0",
     }
+    # New columns for golf course integration
+    golf_round_columns = {
+        'course_id': "INTEGER REFERENCES golf_courses(id)",
+        'tee_id': "INTEGER REFERENCES golf_course_tees(id)",
+    }
+    golf_hole_result_columns = {
+        'par': "INTEGER",
+        'yardage': "INTEGER",
+    }
     with engine.connect() as conn:
         for col_name, col_type in golf_columns.items():
             try:
                 conn.execute(text(f"ALTER TABLE players ADD COLUMN {col_name} {col_type}"))
+            except Exception:
+                conn.rollback()
+                continue
+        for col_name, col_type in golf_round_columns.items():
+            try:
+                conn.execute(text(f"ALTER TABLE golf_rounds ADD COLUMN {col_name} {col_type}"))
+            except Exception:
+                conn.rollback()
+                continue
+        for col_name, col_type in golf_hole_result_columns.items():
+            try:
+                conn.execute(text(f"ALTER TABLE golf_hole_results ADD COLUMN {col_name} {col_type}"))
             except Exception:
                 conn.rollback()
                 continue

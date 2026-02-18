@@ -133,21 +133,69 @@ export interface RivalryStats {
   recent_games: RivalryGame[];
 }
 
+// Golf Course Types
+export interface GolfCourseSearchResult {
+  id: number;
+  club_name: string;
+  course_name: string;
+  city?: string;
+  state?: string;
+  country?: string;
+}
+
+export interface GolfCourseTeeHole {
+  hole_number: number;
+  par: number;
+  yardage: number;
+  handicap?: number;
+}
+
+export interface GolfCourseTee {
+  id: number;
+  tee_name: string;
+  gender: string;
+  course_rating?: number;
+  slope_rating?: number;
+  total_yards?: number;
+  par_total?: number;
+  holes: GolfCourseTeeHole[];
+}
+
+export interface GolfCourseOut {
+  id: number;
+  api_id: number;
+  club_name: string;
+  course_name: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  latitude?: number;
+  longitude?: number;
+  tees: GolfCourseTee[];
+}
+
 // Golf Types
 export interface GolfHoleInput {
   hole_number: number;
   winner_team: number | null;
+  par?: number;
+  yardage?: number;
 }
 
 export interface GolfHoleResult {
   hole_number: number;
   winner_team: number | null;
+  par?: number;
+  yardage?: number;
 }
 
 export interface GolfRoundCreate {
   team1_players: number[];
   team2_players: number[];
-  course: string;
+  course?: string;
+  course_id?: number;
+  tee_id?: number;
   holes: GolfHoleInput[];
 }
 
@@ -155,6 +203,8 @@ export interface GolfRoundUpdate {
   team1_players?: number[];
   team2_players?: number[];
   course?: string;
+  course_id?: number;
+  tee_id?: number;
   holes?: GolfHoleInput[];
 }
 
@@ -166,9 +216,12 @@ export interface GolfRound {
   team2_holes_won: number;
   halved_holes: number;
   winner_team: number | null;
+  course_id?: number;
+  tee_id?: number;
   team1_players: Player[];
   team2_players: Player[];
   hole_results: GolfHoleResult[];
+  golf_course?: GolfCourseOut;
 }
 
 export interface GolfRoundSummary {
@@ -183,6 +236,12 @@ export interface GolfRoundSummary {
   team2_player_names: string[];
 }
 
+export interface GolfParTypeStat {
+  won: number;
+  lost: number;
+  win_percentage: number;
+}
+
 export interface GolfPlayerStats {
   id: number;
   name: string;
@@ -193,5 +252,8 @@ export interface GolfPlayerStats {
   golf_holes_won: number;
   golf_holes_lost: number;
   golf_win_percentage: number;
+  par3: GolfParTypeStat;
+  par4: GolfParTypeStat;
+  par5: GolfParTypeStat;
   recent_rounds: GolfRoundSummary[];
 }

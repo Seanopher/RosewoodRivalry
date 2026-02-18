@@ -185,12 +185,70 @@ class RivalryStats(BaseModel):
     recent_games: List[RivalryGame]
 
 # ---------------------------
+# Golf Course Schemas
+# ---------------------------
+class GolfCourseSearchResult(BaseModel):
+    """Lightweight course for search dropdown"""
+    id: int
+    club_name: str
+    course_name: str
+    city: Optional[str] = None
+    state: Optional[str] = None
+    country: Optional[str] = None
+
+class GolfCourseTeeHoleOut(BaseModel):
+    """Single hole data for a tee set"""
+    hole_number: int
+    par: int
+    yardage: int
+    handicap: Optional[int] = None
+
+    model_config = {
+        "from_attributes": True
+    }
+
+class GolfCourseTeeOut(BaseModel):
+    """Tee set with hole data"""
+    id: int
+    tee_name: str
+    gender: str
+    course_rating: Optional[float] = None
+    slope_rating: Optional[int] = None
+    total_yards: Optional[int] = None
+    par_total: Optional[int] = None
+    holes: List[GolfCourseTeeHoleOut] = []
+
+    model_config = {
+        "from_attributes": True
+    }
+
+class GolfCourseOut(BaseModel):
+    """Full course with tees and holes"""
+    id: int
+    api_id: int
+    club_name: str
+    course_name: str
+    address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    country: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    tees: List[GolfCourseTeeOut] = []
+
+    model_config = {
+        "from_attributes": True
+    }
+
+# ---------------------------
 # Golf Schemas
 # ---------------------------
 class GolfHoleInput(BaseModel):
     """Input for a single hole result"""
     hole_number: int = Field(..., ge=1, le=18)
     winner_team: Optional[int] = Field(None)  # 1, 2, or null for halved
+    par: Optional[int] = None
+    yardage: Optional[int] = None
 
     @validator('winner_team')
     def validate_winner_team(cls, v):
@@ -202,7 +260,9 @@ class GolfRoundCreate(BaseModel):
     """Create a new golf round"""
     team1_players: List[int] = Field(..., min_items=2, max_items=2)
     team2_players: List[int] = Field(..., min_items=2, max_items=2)
-    course: str = Field(..., min_length=1, max_length=200)
+    course: Optional[str] = Field(None, max_length=200)
+    course_id: Optional[int] = None
+    tee_id: Optional[int] = None
     holes: List[GolfHoleInput] = Field(..., min_items=18, max_items=18)
 
     @validator('team2_players')
@@ -221,11 +281,20 @@ class GolfRoundCreate(BaseModel):
             raise ValueError('Must provide results for all 18 holes (1-18)')
         return v
 
+    @validator('course', always=True)
+    def validate_course_or_course_id(cls, v, values):
+        # course string is required if no course_id
+        if not v and not values.get('course_id'):
+            raise ValueError('Either course name or course_id must be provided')
+        return v
+
 class GolfRoundUpdate(BaseModel):
     """Update an existing golf round"""
     team1_players: Optional[List[int]] = Field(None, min_items=2, max_items=2)
     team2_players: Optional[List[int]] = Field(None, min_items=2, max_items=2)
-    course: Optional[str] = Field(None, min_length=1, max_length=200)
+    course: Optional[str] = Field(None, max_length=200)
+    course_id: Optional[int] = None
+    tee_id: Optional[int] = None
     holes: Optional[List[GolfHoleInput]] = Field(None, min_items=18, max_items=18)
 
     @validator('team2_players')
@@ -249,6 +318,8 @@ class GolfHoleResultOut(BaseModel):
     """Output for a single hole result"""
     hole_number: int
     winner_team: Optional[int]
+    par: Optional[int] = None
+    yardage: Optional[int] = None
 
     model_config = {
         "from_attributes": True
@@ -263,9 +334,12 @@ class GolfRoundOut(BaseModel):
     team2_holes_won: int
     halved_holes: int
     winner_team: Optional[int]
+    course_id: Optional[int] = None
+    tee_id: Optional[int] = None
     team1_players: List[PlayerOut]
     team2_players: List[PlayerOut]
     hole_results: List[GolfHoleResultOut]
+    golf_course: Optional[GolfCourseOut] = None
 
     model_config = {
         "from_attributes": True
@@ -283,6 +357,12 @@ class GolfRoundSummary(BaseModel):
     team1_player_names: List[str]
     team2_player_names: List[str]
 
+class GolfParTypeStat(BaseModel):
+    """Win/loss record for a specific par type"""
+    won: int
+    lost: int
+    win_percentage: float
+
 class GolfPlayerStats(BaseModel):
     """Golf-specific stats for a player"""
     id: int
@@ -294,4 +374,7 @@ class GolfPlayerStats(BaseModel):
     golf_holes_won: int
     golf_holes_lost: int
     golf_win_percentage: float
+    par3: GolfParTypeStat
+    par4: GolfParTypeStat
+    par5: GolfParTypeStat
     recent_rounds: List[GolfRoundSummary]

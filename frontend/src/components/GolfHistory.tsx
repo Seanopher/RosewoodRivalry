@@ -177,42 +177,39 @@ const GolfHistory: React.FC<GolfHistoryProps> = ({ rounds, onEditRound }) => {
                 ) : expandedRoundData ? (
                   <div>
                     <h4 className="text-sm font-medium mb-3" style={{ color: '#f1f5f9' }}>Hole-by-Hole Results</h4>
-                    <div className="grid grid-cols-9 gap-1 mb-2">
-                      {/* Front 9 */}
-                      {expandedRoundData.hole_results.slice(0, 9).map((hole) => (
-                        <div key={hole.hole_number} className="text-center p-2 rounded" style={{
-                          backgroundColor: hole.winner_team === 1 ? 'rgba(96, 165, 250, 0.15)' :
-                                          hole.winner_team === 2 ? 'rgba(244, 63, 94, 0.15)' :
-                                          'rgba(250, 204, 21, 0.1)',
-                          border: `1px solid ${hole.winner_team === 1 ? 'rgba(96, 165, 250, 0.3)' :
-                                              hole.winner_team === 2 ? 'rgba(244, 63, 94, 0.3)' :
-                                              'rgba(250, 204, 21, 0.2)'}`,
-                        }}>
-                          <div className="text-xs font-medium" style={{ color: '#94a3b8' }}>{hole.hole_number}</div>
-                          <div className="text-xs font-bold" style={{ color: getResultColor(hole.winner_team) }}>
-                            {hole.winner_team === 1 ? 'T1' : hole.winner_team === 2 ? 'T2' : '-'}
-                          </div>
+                    {(() => {
+                      const hasCourseData = expandedRoundData.hole_results.some(h => h.par != null);
+                      const renderHoleGrid = (holes: typeof expandedRoundData.hole_results) => (
+                        <div className="grid grid-cols-9 gap-1">
+                          {holes.map((hole) => (
+                            <div key={hole.hole_number} className="text-center p-2 rounded" style={{
+                              backgroundColor: hole.winner_team === 1 ? 'rgba(96, 165, 250, 0.15)' :
+                                              hole.winner_team === 2 ? 'rgba(244, 63, 94, 0.15)' :
+                                              'rgba(250, 204, 21, 0.1)',
+                              border: `1px solid ${hole.winner_team === 1 ? 'rgba(96, 165, 250, 0.3)' :
+                                                  hole.winner_team === 2 ? 'rgba(244, 63, 94, 0.3)' :
+                                                  'rgba(250, 204, 21, 0.2)'}`,
+                            }}>
+                              <div className="text-xs font-medium" style={{ color: '#94a3b8' }}>{hole.hole_number}</div>
+                              {hasCourseData && hole.par != null && (
+                                <div className="text-xs" style={{ color: '#64748b' }}>
+                                  P{hole.par}{hole.yardage ? ` ${hole.yardage}y` : ''}
+                                </div>
+                              )}
+                              <div className="text-xs font-bold" style={{ color: getResultColor(hole.winner_team) }}>
+                                {hole.winner_team === 1 ? 'T1' : hole.winner_team === 2 ? 'T2' : '-'}
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                    <div className="grid grid-cols-9 gap-1">
-                      {/* Back 9 */}
-                      {expandedRoundData.hole_results.slice(9, 18).map((hole) => (
-                        <div key={hole.hole_number} className="text-center p-2 rounded" style={{
-                          backgroundColor: hole.winner_team === 1 ? 'rgba(96, 165, 250, 0.15)' :
-                                          hole.winner_team === 2 ? 'rgba(244, 63, 94, 0.15)' :
-                                          'rgba(250, 204, 21, 0.1)',
-                          border: `1px solid ${hole.winner_team === 1 ? 'rgba(96, 165, 250, 0.3)' :
-                                              hole.winner_team === 2 ? 'rgba(244, 63, 94, 0.3)' :
-                                              'rgba(250, 204, 21, 0.2)'}`,
-                        }}>
-                          <div className="text-xs font-medium" style={{ color: '#94a3b8' }}>{hole.hole_number}</div>
-                          <div className="text-xs font-bold" style={{ color: getResultColor(hole.winner_team) }}>
-                            {hole.winner_team === 1 ? 'T1' : hole.winner_team === 2 ? 'T2' : '-'}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                      );
+                      return (
+                        <>
+                          <div className="mb-2">{renderHoleGrid(expandedRoundData.hole_results.slice(0, 9))}</div>
+                          {renderHoleGrid(expandedRoundData.hole_results.slice(9, 18))}
+                        </>
+                      );
+                    })()}
                     <div className="mt-3 flex justify-center gap-4 text-xs" style={{ color: '#94a3b8' }}>
                       <span><span style={{ color: '#60a5fa' }}>T1</span> = Team 1 win</span>
                       <span><span style={{ color: '#f43f5e' }}>T2</span> = Team 2 win</span>

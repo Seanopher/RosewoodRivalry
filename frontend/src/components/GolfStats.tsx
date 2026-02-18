@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Player, GolfPlayerStats, GolfRoundSummary } from '../types';
+import { Player, GolfPlayerStats, GolfParTypeStat, GolfRoundSummary } from '../types';
 import { golfAPI } from '../services/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -206,6 +206,63 @@ const GolfStats: React.FC<GolfStatsProps> = ({ players }) => {
                   </div>
                 </div>
               </div>
+
+              {/* Par Type Breakdown */}
+              {(playerStats.par3.won + playerStats.par3.lost + playerStats.par4.won + playerStats.par4.lost + playerStats.par5.won + playerStats.par5.lost) > 0 && (
+                <div className="pt-6" style={{ borderTop: '1px solid #334155' }}>
+                  <h4 className="font-medium mb-4" style={{ color: '#f1f5f9' }}>Performance by Par Type</h4>
+                  <div className="grid grid-cols-3 gap-4">
+                    {([
+                      { label: 'Par 3', stat: playerStats.par3, accent: '#818cf8', accentBg: 'rgba(129, 140, 248, 0.12)', accentBorder: 'rgba(129, 140, 248, 0.3)' },
+                      { label: 'Par 4', stat: playerStats.par4, accent: '#34d399', accentBg: 'rgba(52, 211, 153, 0.12)', accentBorder: 'rgba(52, 211, 153, 0.3)' },
+                      { label: 'Par 5', stat: playerStats.par5, accent: '#fb923c', accentBg: 'rgba(251, 146, 60, 0.12)', accentBorder: 'rgba(251, 146, 60, 0.3)' },
+                    ] as { label: string; stat: GolfParTypeStat; accent: string; accentBg: string; accentBorder: string }[]).map(({ label, stat, accent, accentBg, accentBorder }) => {
+                      const total = stat.won + stat.lost;
+                      const hasData = total > 0;
+                      return (
+                        <div
+                          key={label}
+                          className="rounded-xl p-4"
+                          style={{ backgroundColor: accentBg, border: `1px solid ${accentBorder}` }}
+                        >
+                          {/* Par label */}
+                          <div className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: accent }}>
+                            {label}
+                          </div>
+
+                          {/* Win % */}
+                          <div className="text-3xl font-bold mb-1" style={{ color: hasData ? accent : '#475569' }}>
+                            {hasData ? `${stat.win_percentage.toFixed(0)}%` : '—'}
+                          </div>
+                          <div className="text-xs mb-3" style={{ color: '#64748b' }}>
+                            {hasData ? 'win rate' : 'no data'}
+                          </div>
+
+                          {/* W-L record */}
+                          {hasData && (
+                            <>
+                              <div className="text-sm font-medium mb-3" style={{ color: '#cbd5e1' }}>
+                                {stat.won}W – {stat.lost}L
+                              </div>
+
+                              {/* Progress bar */}
+                              <div className="rounded-full overflow-hidden" style={{ height: '6px', backgroundColor: 'rgba(255,255,255,0.08)' }}>
+                                <div
+                                  className="h-full rounded-full transition-all duration-500"
+                                  style={{
+                                    width: `${stat.win_percentage}%`,
+                                    backgroundColor: accent,
+                                  }}
+                                />
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Holes Won Per Round Chart */}
               {playerStats.recent_rounds.length > 0 && (
