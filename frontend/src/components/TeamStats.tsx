@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { Team, TeamStats as TeamStatsType } from '../types';
+import { Team, TeamStats as TeamStatsType, Season } from '../types';
 import { teamAPI } from '../services/api';
 
 interface TeamStatsProps {
   teams: Team[];
   onTeamSelect: (team: Team) => void;
   teamThreshold?: { total_games: number; min_games_required: number; threshold_percentage: number } | null;
+  season?: Season;
 }
 
-const TeamStats: React.FC<TeamStatsProps> = ({ teams, onTeamSelect, teamThreshold }) => {
+const TeamStats: React.FC<TeamStatsProps> = ({ teams, onTeamSelect, teamThreshold, season }) => {
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [teamStats, setTeamStats] = useState<TeamStatsType | null>(null);
   const [loading, setLoading] = useState(false);
@@ -26,7 +27,7 @@ const TeamStats: React.FC<TeamStatsProps> = ({ teams, onTeamSelect, teamThreshol
     setError(null);
 
     try {
-      const stats = await teamAPI.getTeamStats(team.id);
+      const stats = await teamAPI.getTeamStats(team.id, season);
       setTeamStats(stats);
       onTeamSelect(team);
     } catch (err: any) {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Player, PlayerStats as PlayerStatsType } from '../types';
+import { Player, PlayerStats as PlayerStatsType, Season } from '../types';
 import { playerAPI } from '../services/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 
@@ -7,38 +7,56 @@ interface PlayerStatsProps {
   players: Player[];
   selectedPlayer: Player | null;
   onPlayerSelect: (player: Player | null) => void;
+  season: Season;
 }
 
 const PlayerStats: React.FC<PlayerStatsProps> = ({
   players,
   selectedPlayer,
-  onPlayerSelect
+  onPlayerSelect,
+  season,
 }) => {
   const [playerStats, setPlayerStats] = useState<PlayerStatsType | null>(null);
+  const [leaderboard, setLeaderboard] = useState<PlayerStatsType[]>([]);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const detailedStatsRef = useRef<HTMLDivElement>(null);
 
+  // Reload leaderboard whenever season changes
+  useEffect(() => {
+    loadLeaderboard();
+    setPlayerStats(null);
+  }, [season]);
+
   useEffect(() => {
     if (selectedPlayer) {
       loadPlayerStats(selectedPlayer.id);
-      // Auto-scroll to detailed stats section (to bottom)
       setTimeout(() => {
-        detailedStatsRef.current?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'end'
-        });
+        detailedStatsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
       }, 100);
     } else {
       setPlayerStats(null);
     }
   }, [selectedPlayer]);
 
+  const loadLeaderboard = async () => {
+    try {
+      setLeaderboardLoading(true);
+      const data = await playerAPI.getLeaderboard(season);
+      setLeaderboard(data);
+    } catch (err) {
+      console.error('Error loading leaderboard:', err);
+    } finally {
+      setLeaderboardLoading(false);
+    }
+  };
+
   const loadPlayerStats = async (playerId: number) => {
     try {
       setLoading(true);
       setError(null);
-      const stats = await playerAPI.getPlayerStats(playerId, 10);
+      const stats = await playerAPI.getPlayerStats(playerId, 10, season);
       setPlayerStats(stats);
     } catch (err) {
       setError('Failed to load player stats');
@@ -79,34 +97,55 @@ const PlayerStats: React.FC<PlayerStatsProps> = ({
       <div className="rounded-lg p-6" style={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}>
         <h2 className="text-lg font-medium mb-2" style={{ color: '#f1f5f9' }}>Player Statistics</h2>
         <p className="text-sm mb-4" style={{ color: '#94a3b8' }}>Select a player to view their full stats page.</p>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {players
-            .sort((a, b) => b.win_percentage - a.win_percentage)
-            .map((player) => (
-            <button
-              key={player.id}
-              onClick={() => onPlayerSelect(player)}
-              style={{
-                padding: '1rem',
-                textAlign: 'left',
-                borderRadius: '0.5rem',
-                border: selectedPlayer?.id === player.id ? '2px solid #f43f5e' : '1px solid #334155',
-                backgroundColor: selectedPlayer?.id === player.id ? 'rgba(244, 63, 94, 0.1)' : '#0f172a',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              <div className="font-medium" style={{ color: '#f1f5f9' }}>{player.name}</div>
-              <div className="text-sm mt-1" style={{ color: '#94a3b8' }}>
-                {player.games_played} games
-              </div>
-              {player.games_played > 0 && (
-                <div className="text-sm font-medium mt-1" style={{ color: getWinRateColor(player.win_percentage) }}>
-                  {player.win_percentage.toFixed(1)}% wins
-                </div>
-              )}
-            </button>
-          ))}
-        </div>
+        {leaderboardLoading ? (
+          <div className="text-center py-4" style={{ color: '#94a3b8' }}>Loading...</div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {(() => {
+              // Build a map of season stats from leaderboard
+              const lbMap = new Map(leaderboard.map(s => [s.id, s]));
+              // Sort players by season win%, falling back to all-time
+              return [...players]
+                .sort((a, b) => {
+                  const aWin = lbMap.get(a.id)?.win_percentage ?? 0;
+                  const bWin = lbMap.get(b.id)?.win_percentage ?? 0;
+                  const aGames = lbMap.get(a.id)?.games_played ?? 0;
+                  const bGames = lbMap.get(b.id)?.games_played ?? 0;
+                  if (bWin !== aWin) return bWin - aWin;
+                  return bGames - aGames;
+                })
+                .map((player) => {
+                  const seasonStats = lbMap.get(player.id);
+                  const gamesPlayed = seasonStats?.games_played ?? 0;
+                  const winPct = seasonStats?.win_percentage ?? 0;
+                  return (
+                    <button
+                      key={player.id}
+                      onClick={() => onPlayerSelect(player)}
+                      style={{
+                        padding: '1rem',
+                        textAlign: 'left',
+                        borderRadius: '0.5rem',
+                        border: selectedPlayer?.id === player.id ? '2px solid #f43f5e' : '1px solid #334155',
+                        backgroundColor: selectedPlayer?.id === player.id ? 'rgba(244, 63, 94, 0.1)' : '#0f172a',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      <div className="font-medium" style={{ color: '#f1f5f9' }}>{player.name}</div>
+                      <div className="text-sm mt-1" style={{ color: '#94a3b8' }}>
+                        {gamesPlayed} games
+                      </div>
+                      {gamesPlayed > 0 && (
+                        <div className="text-sm font-medium mt-1" style={{ color: getWinRateColor(winPct) }}>
+                          {winPct.toFixed(1)}% wins
+                        </div>
+                      )}
+                    </button>
+                  );
+                });
+            })()}
+          </div>
+        )}
       </div>
 
       {/* Detailed Stats */}
@@ -212,8 +251,9 @@ const PlayerStats: React.FC<PlayerStatsProps> = ({
                   <ResponsiveContainer width="100%" height="100%">
                     {(() => {
                       // Calculate averages and domain outside of render
-                      const avgWin = players.length > 0 ? players.reduce((sum, p) => sum + p.avg_win_margin, 0) / players.length : 0;
-                      const avgLoss = players.length > 0 ? -(players.reduce((sum, p) => sum + p.avg_loss_margin, 0) / players.length) : 0;
+                      const lbSource = leaderboard.length > 0 ? leaderboard : [];
+                      const avgWin = lbSource.length > 0 ? lbSource.reduce((sum, p) => sum + p.avg_win_margin, 0) / lbSource.length : 0;
+                      const avgLoss = lbSource.length > 0 ? -(lbSource.reduce((sum, p) => sum + p.avg_loss_margin, 0) / lbSource.length) : 0;
 
                       // Get player's values
                       const playerWin = playerStats.avg_win_margin;

@@ -7,6 +7,8 @@ services:
     envVars:
       - key: DATABASE_URL
         sync: false
+      - key: GOLF_COURSE_API_KEY
+        value: WL6Q2USWTEYDYM3UJQN7CDSGWA
     healthCheckPath: /docs
 
   - type: web

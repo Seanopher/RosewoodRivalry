@@ -1,3 +1,5 @@
+export type Season = '2025' | '2026' | 'all';
+
 // API Types matching backend schemas
 export interface Player {
   id: number;

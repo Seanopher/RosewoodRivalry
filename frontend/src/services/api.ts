@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Player, PlayerCreate, Game, GameCreate, GameUpdate, GameSummary, PlayerStats, Team, TeamStats, TeamsListResponse, RivalryStats, GolfRound, GolfRoundCreate, GolfRoundUpdate, GolfRoundSummary, GolfPlayerStats, GolfCourseSearchResult, GolfCourseOut } from '../types';
+import { Player, PlayerCreate, Game, GameCreate, GameUpdate, GameSummary, PlayerStats, Team, TeamStats, TeamsListResponse, RivalryStats, GolfRound, GolfRoundCreate, GolfRoundUpdate, GolfRoundSummary, GolfPlayerStats, GolfCourseSearchResult, GolfCourseOut, Season } from '../types';
 
 // API URL configuration for different environments
 const getApiBaseUrl = () => {
@@ -134,10 +134,20 @@ export const playerAPI = {
     return response.data;
   },
 
-  // Get detailed player stats
-  getPlayerStats: async (playerId: number, limit?: number): Promise<PlayerStats> => {
-    const params = limit ? { limit } : {};
+  // Get detailed player stats (optionally season-filtered)
+  getPlayerStats: async (playerId: number, limit?: number, season?: Season): Promise<PlayerStats> => {
+    const params: Record<string, any> = {};
+    if (limit) params.limit = limit;
+    if (season && season !== 'all') params.season = season;
     const response = await api.get(`/players/${playerId}/stats`, { params });
+    return response.data;
+  },
+
+  // Get all players ranked by win percentage (optionally season-filtered)
+  getLeaderboard: async (season?: Season): Promise<PlayerStats[]> => {
+    const params: Record<string, any> = {};
+    if (season && season !== 'all') params.season = season;
+    const response = await api.get('/players/leaderboard', { params });
     return response.data;
   },
 };
@@ -175,15 +185,19 @@ export const gameAPI = {
 };
 
 export const teamAPI = {
-  // Get all teams
-  getAllTeams: async (): Promise<TeamsListResponse> => {
-    const response = await api.get('/teams/');
+  // Get all teams (optionally season-filtered)
+  getAllTeams: async (season?: Season): Promise<TeamsListResponse> => {
+    const params: Record<string, any> = {};
+    if (season && season !== 'all') params.season = season;
+    const response = await api.get('/teams/', { params });
     return response.data;
   },
 
-  // Get team stats by ID
-  getTeamStats: async (teamId: number): Promise<TeamStats> => {
-    const response = await api.get(`/teams/${teamId}`);
+  // Get team stats by ID (optionally season-filtered)
+  getTeamStats: async (teamId: number, season?: Season): Promise<TeamStats> => {
+    const params: Record<string, any> = {};
+    if (season && season !== 'all') params.season = season;
+    const response = await api.get(`/teams/${teamId}`, { params });
     return response.data;
   },
 
