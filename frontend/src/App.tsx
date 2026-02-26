@@ -12,6 +12,9 @@ import GolfRoundCreator from './components/GolfRoundCreator';
 import GolfHistory from './components/GolfHistory';
 import GolfStats from './components/GolfStats';
 import EditGolfRound from './components/EditGolfRound';
+import WelcomeScreen from './components/WelcomeScreen';
+
+const LS_KEY = 'rr_user';
 
 type Sport = 'dice' | 'golf';
 type DiceTab = 'dashboard' | 'stats' | 'history' | 'game' | 'newplayer' | 'edit';
@@ -19,6 +22,7 @@ type GolfTab = 'golf-dashboard' | 'golf-stats' | 'golf-history' | 'golf-round' |
 type Tab = DiceTab | GolfTab;
 
 function App() {
+  const [currentUser, setCurrentUser] = useState<Player | 'guest' | null>(null);
   const [activeSport, setActiveSport] = useState<Sport>('dice');
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 640);
@@ -64,6 +68,17 @@ function App() {
       setGames(gamesData);
       setGolfRounds(golfData);
       setError(null);
+
+      // Restore stored user from localStorage
+      const stored = localStorage.getItem(LS_KEY);
+      if (stored === 'guest') {
+        setCurrentUser('guest');
+      } else if (stored) {
+        const id = parseInt(stored, 10);
+        const found = playersData.find((p: Player) => p.id === id);
+        if (found) setCurrentUser(found);
+        else localStorage.removeItem(LS_KEY); // stale — player removed
+      }
     } catch (err: any) {
       if (err.message === 'Connection timeout') {
         setError(
@@ -76,7 +91,7 @@ function App() {
               />
               <div>
                 <h1 className="text-2xl font-bold" style={{ color: '#f1f5f9' }}>Rosewood Rivalry</h1>
-                <span className="text-lg" style={{ color: '#94a3b8' }}>Tailgate Game Tracker</span>
+                <span className="text-lg" style={{ color: '#94a3b8' }}>Community Sports Analytics</span>
               </div>
             </div>
             <div>Connection timeout. Unable to reach the server.</div>
@@ -89,6 +104,21 @@ function App() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleEnter = (player: Player | null) => {
+    if (player === null) {
+      localStorage.setItem(LS_KEY, 'guest');
+      setCurrentUser('guest');
+    } else {
+      localStorage.setItem(LS_KEY, String(player.id));
+      setCurrentUser(player);
+    }
+  };
+
+  const handleSwitchUser = () => {
+    localStorage.removeItem(LS_KEY);
+    setCurrentUser(null);
   };
 
   const handlePlayerCreated = (newPlayer: Player) => {
@@ -213,6 +243,11 @@ function App() {
     );
   }
 
+  // Show welcome screen if user hasn't identified yet
+  if (!loading && !error && currentUser === null) {
+    return <WelcomeScreen players={players} onEnter={handleEnter} />;
+  }
+
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#0f172a' }}>
 
@@ -232,9 +267,52 @@ function App() {
                 <h1 style={{ color: '#f8fafc', fontWeight: 700, fontSize: isMobile ? '1.05rem' : '1.5rem', lineHeight: 1.2 }}>
                   Rosewood Rivalry
                 </h1>
-                {!isMobile && <span style={{ color: '#94a3b8', fontSize: '0.875rem' }}>Tailgate Game Tracker</span>}
+                {!isMobile && <span style={{ color: '#94a3b8', fontSize: '0.875rem' }}>Community Sports Analytical Center</span>}
               </div>
             </div>
+
+            {/* Right side: user badge + sport switcher */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+
+            {/* User badge */}
+            {currentUser !== null && (
+              <button
+                onClick={handleSwitchUser}
+                title="Switch player"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  backgroundColor: 'rgba(244,63,94,0.08)',
+                  border: '1px solid rgba(244,63,94,0.2)',
+                  borderRadius: '2rem',
+                  padding: isMobile ? '0.3rem 0.5rem' : '0.3rem 0.75rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                <div style={{
+                  width: '1.375rem',
+                  height: '1.375rem',
+                  borderRadius: '50%',
+                  backgroundColor: '#f43f5e',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '0.6rem',
+                  fontWeight: 800,
+                  color: '#fff',
+                  flexShrink: 0,
+                }}>
+                  {currentUser === 'guest' ? '?' : (currentUser as Player).name.charAt(0).toUpperCase()}
+                </div>
+                {!isMobile && (
+                  <span style={{ color: '#f1f5f9', fontSize: '0.75rem', fontWeight: 600 }}>
+                    {currentUser === 'guest' ? 'Guest' : (currentUser as Player).name}
+                  </span>
+                )}
+              </button>
+            )}
 
             {/* Sport Switcher */}
             <div style={{ display: 'flex', borderRadius: '0.5rem', padding: '0.25rem', backgroundColor: '#0f172a', border: '1px solid #334155' }}>
@@ -258,6 +336,8 @@ function App() {
                 </button>
               ))}
             </div>
+
+            </div> {/* end right side */}
           </div>
 
           {/* Desktop tab bar — only on desktop */}
@@ -370,6 +450,7 @@ function App() {
           <Dashboard
             players={players}
             games={games}
+            currentUser={currentUser}
           />
         )}
 

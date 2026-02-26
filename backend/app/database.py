@@ -1,7 +1,6 @@
 # app/database.py
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.pool import NullPool
 from typing import Generator
 import os

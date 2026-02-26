@@ -7,9 +7,10 @@ import { parseUTC } from '../utils/dates';
 interface DashboardProps {
   players: Player[];
   games: GameSummary[];
+  currentUser: Player | 'guest' | null;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
+const Dashboard: React.FC<DashboardProps> = ({ players, games, currentUser }) => {
   const [rivalryStats, setRivalryStats] = useState<RivalryStats | null>(null);
   const [rivalryLoading, setRivalryLoading] = useState(false);
   const [winRateView, setWinRateView] = useState<'season' | 'alltime'>('season');
@@ -94,13 +95,330 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
 
 
 
+  // Derive player-specific data when a real user is selected
+  const playerData = currentUser !== 'guest' && currentUser !== null ? currentUser : null;
+
+  const myGames = playerData
+    ? games.filter(g =>
+        g.team1_player_names.includes(playerData.name) ||
+        g.team2_player_names.includes(playerData.name)
+      )
+    : [];
+
+  const myRecentGames = myGames.slice(0, 3);
+
+  const losses = playerData ? playerData.games_played - playerData.games_won : 0;
+
   return (
     <div className="space-y-6 animate-fadeIn">
-      {/* Header */}
+
+      {/* ── Personalized hero card ── */}
+      {playerData ? (
+        <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '0.75rem', overflow: 'hidden' }}>
+          {/* Top strip */}
+          <div style={{ background: 'linear-gradient(135deg, rgba(244,63,94,0.12) 0%, rgba(244,63,94,0.04) 100%)', borderBottom: '1px solid #334155', padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            {/* Avatar */}
+            <div style={{ width: '3rem', height: '3rem', borderRadius: '50%', backgroundColor: '#f43f5e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', fontWeight: 800, color: '#fff', flexShrink: 0 }}>
+              {playerData.name.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <p style={{ color: '#94a3b8', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', margin: 0 }}>Welcome back</p>
+              <h2 style={{ color: '#f8fafc', fontSize: '1.375rem', fontWeight: 800, margin: 0, lineHeight: 1.2 }}>{playerData.name}</h2>
+            </div>
+          </div>
+
+          {/* Stat row */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', borderBottom: '1px solid #334155' }}>
+            {[
+              { label: 'Win Rate', value: `${Math.round(playerData.win_percentage)}%`, color: '#f43f5e' },
+              { label: 'Wins', value: playerData.games_won, color: '#22c55e' },
+              { label: 'Losses', value: losses, color: '#ef4444' },
+            ].map((stat, i) => (
+              <div key={i} style={{ padding: '1rem', textAlign: 'center', borderRight: i < 2 ? '1px solid #334155' : 'none' }}>
+                <div style={{ fontSize: '1.625rem', fontWeight: 800, color: stat.color, lineHeight: 1 }}>{stat.value}</div>
+                <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '0.3rem' }}>{stat.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Recent games */}
+          {myRecentGames.length > 0 ? (
+            <div style={{ padding: '1rem 1.5rem' }}>
+              <p style={{ color: '#475569', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Your Last {myRecentGames.length} Games</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {myRecentGames.map(game => {
+                  const onTeam1 = game.team1_player_names.includes(playerData.name);
+                  const won = (onTeam1 && game.winner_team === 1) || (!onTeam1 && game.winner_team === 2);
+                  const myScore = onTeam1 ? game.team1_score : game.team2_score;
+                  const oppScore = onTeam1 ? game.team2_score : game.team1_score;
+                  const oppNames = onTeam1 ? game.team2_player_names : game.team1_player_names;
+                  const date = parseUTC(game.played_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+                  return (
+                    <div key={game.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', backgroundColor: '#0f172a', borderRadius: '0.5rem', padding: '0.625rem 0.875rem', border: '1px solid #1e293b' }}>
+                      {/* W/L badge */}
+                      <div style={{ width: '1.75rem', height: '1.75rem', borderRadius: '0.375rem', backgroundColor: won ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 800, color: won ? '#22c55e' : '#ef4444' }}>{won ? 'W' : 'L'}</span>
+                      </div>
+                      {/* Score */}
+                      <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#f1f5f9', flexShrink: 0 }}>
+                        {myScore}–{oppScore}
+                      </div>
+                      {/* vs opponents */}
+                      <div style={{ fontSize: '0.75rem', color: '#64748b', flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                        vs {oppNames.join(', ')}
+                      </div>
+                      {/* Date */}
+                      <div style={{ fontSize: '0.7rem', color: '#475569', flexShrink: 0 }}>{date}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <div style={{ padding: '1.25rem 1.5rem', textAlign: 'center', color: '#475569', fontSize: '0.875rem' }}>
+              No games recorded yet.
+            </div>
+          )}
+        </div>
+      ) : (
+        /* Guest welcome */
+        <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '0.75rem', padding: '1.5rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>👀</div>
+          <h2 style={{ color: '#f8fafc', fontSize: '1.25rem', fontWeight: 700, margin: '0 0 0.4rem' }}>Viewing as Guest</h2>
+          <p style={{ color: '#64748b', fontSize: '0.875rem', margin: 0 }}>Select your name from the welcome screen to see your personal stats.</p>
+        </div>
+      )}
+
+      {/* Win Rate Leaders */}
       <div className="p-6 rounded-lg" style={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}>
-        <h2 className="text-2xl font-bold mb-2" style={{ color: '#f8fafc' }}>Dashboard </h2>
-        <p style={{ color: '#94a3b8' }}>Welcome to the Rosewood Rivalry Game Tracker! Check out the newly implemented Golf tracker!
+        {/* Header row with toggle */}
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-lg font-semibold" style={{ color: '#f8fafc' }}>
+            👑 Win Rate Leaders
+          </h3>
+          <div className="flex rounded-lg p-0.5" style={{ backgroundColor: '#0f172a', border: '1px solid #334155' }}>
+            <button
+              onClick={() => setWinRateView('season')}
+              style={{
+                padding: '0.25rem 0.75rem',
+                borderRadius: '0.375rem',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                backgroundColor: winRateView === 'season' ? '#f43f5e' : 'transparent',
+                color: winRateView === 'season' ? '#f8fafc' : '#94a3b8',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              2026 Season
+            </button>
+            <button
+              onClick={() => setWinRateView('alltime')}
+              style={{
+                padding: '0.25rem 0.75rem',
+                borderRadius: '0.375rem',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                backgroundColor: winRateView === 'alltime' ? '#f43f5e' : 'transparent',
+                color: winRateView === 'alltime' ? '#f8fafc' : '#94a3b8',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              All Time
+            </button>
+          </div>
+        </div>
+
+        {winRateView === 'season' ? (
+          <>
+            <p className="text-sm mb-4" style={{ color: '#94a3b8' }}>
+              2026 season — min {season2026MinGames} game{season2026MinGames !== 1 ? 's' : ''} required ({season2026TotalGames > 0 ? Math.round((season2026MinGames / season2026TotalGames) * 100) : 33}% participation)
+            </p>
+            {seasonLeaderboardLoading ? (
+              <div className="text-center py-4" style={{ color: '#94a3b8' }}>Loading...</div>
+            ) : qualifiedSeasonPlayers.length > 0 ? (
+              <div className="space-y-3">
+                {qualifiedSeasonPlayers.map((player, index) => {
+                  const rankStyles = [
+                    { bg: 'rgba(234, 179, 8, 0.1)', border: 'rgba(234, 179, 8, 0.3)', badgeBg: 'rgba(234, 179, 8, 0.15)', badgeColor: '#fde047' },
+                    { bg: 'rgba(148, 163, 184, 0.1)', border: 'rgba(148, 163, 184, 0.3)', badgeBg: 'rgba(148, 163, 184, 0.15)', badgeColor: '#cbd5e1' },
+                    { bg: 'rgba(249, 115, 22, 0.1)', border: 'rgba(249, 115, 22, 0.3)', badgeBg: 'rgba(249, 115, 22, 0.15)', badgeColor: '#fdba74' },
+                  ];
+                  const defaultStyle = { bg: '#0f172a', border: '#334155', badgeBg: 'rgba(59, 130, 246, 0.15)', badgeColor: '#60a5fa' };
+                  const style = index < 3 ? rankStyles[index] : defaultStyle;
+                  const rankEmojis = ['🥇', '🥈', '🥉'];
+                  return (
+                    <div key={player.id} className="flex items-center p-3 rounded-lg" style={{ backgroundColor: style.bg, border: `1px solid ${style.border}` }}>
+                      <div className="flex-shrink-0 mr-3 w-10 flex items-center justify-center">
+                        {index < 3 ? (
+                          <span className="text-2xl">{rankEmojis[index]}</span>
+                        ) : (
+                          <span className="text-xl font-bold" style={{ color: '#cbd5e1' }}>{index + 1}</span>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium" style={{ color: '#f1f5f9' }}>{player.name}</p>
+                        <p className="text-sm" style={{ color: '#94a3b8' }}>
+                          {player.games_won}/{player.games_played} games ({season2026TotalGames > 0 ? Math.round((player.games_played / season2026TotalGames) * 100) : 0}% participation)
+                        </p>
+                      </div>
+                      <div className="flex-shrink-0">
+                        <span className="inline-flex items-center px-2 py-1 rounded-full font-medium" style={{ backgroundColor: style.badgeBg, color: style.badgeColor }}>
+                          {Math.round(player.win_percentage)}%
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-center py-4" style={{ color: '#94a3b8' }}>
+                {season2026TotalGames === 0
+                  ? 'No 2026 season games yet.'
+                  : `No qualified players yet. Need at least ${season2026MinGames} game${season2026MinGames !== 1 ? 's' : ''} to qualify.`}
+              </p>
+            )}
+          </>
+        ) : (
+          <>
+            <p className="text-sm mb-4" style={{ color: '#94a3b8' }}>
+              All time — min {minimumGamesRequired} games required ({Math.round((minimumGamesRequired / totalGames) * 100)}% participation)
+            </p>
+            {qualifiedPlayers.length > 0 ? (
+              <div className="space-y-3">
+                {qualifiedPlayers.map((player, index) => {
+                  const rankStyles = [
+                    { bg: 'rgba(234, 179, 8, 0.1)', border: 'rgba(234, 179, 8, 0.3)', badgeBg: 'rgba(234, 179, 8, 0.15)', badgeColor: '#fde047' },
+                    { bg: 'rgba(148, 163, 184, 0.1)', border: 'rgba(148, 163, 184, 0.3)', badgeBg: 'rgba(148, 163, 184, 0.15)', badgeColor: '#cbd5e1' },
+                    { bg: 'rgba(249, 115, 22, 0.1)', border: 'rgba(249, 115, 22, 0.3)', badgeBg: 'rgba(249, 115, 22, 0.15)', badgeColor: '#fdba74' },
+                  ];
+                  const defaultStyle = { bg: '#0f172a', border: '#334155', badgeBg: 'rgba(59, 130, 246, 0.15)', badgeColor: '#60a5fa' };
+                  const style = index < 3 ? rankStyles[index] : defaultStyle;
+                  const rankEmojis = ['🥇', '🥈', '🥉'];
+                  return (
+                    <div key={player.id} className="flex items-center p-3 rounded-lg" style={{ backgroundColor: style.bg, border: `1px solid ${style.border}` }}>
+                      <div className="flex-shrink-0 mr-3 w-10 flex items-center justify-center">
+                        {index < 3 ? (
+                          <span className="text-2xl">{rankEmojis[index]}</span>
+                        ) : (
+                          <span className="text-xl font-bold" style={{ color: '#cbd5e1' }}>{index + 1}</span>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium" style={{ color: '#f1f5f9' }}>{player.name}</p>
+                        <p className="text-sm" style={{ color: '#94a3b8' }}>
+                          {player.games_won}/{player.games_played} games ({Math.round((player.games_played / totalGames) * 100)}% participation)
+                        </p>
+                      </div>
+                      <div className="flex-shrink-0">
+                        <span className="inline-flex items-center px-2 py-1 rounded-full font-medium" style={{ backgroundColor: style.badgeBg, color: style.badgeColor }}>
+                          {player.win_percentage > 1 ? Math.round(player.win_percentage) : Math.round(player.win_percentage * 100)}%
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-center py-4" style={{ color: '#94a3b8' }}>
+                No qualified players yet. Players need at least {minimumGamesRequired} games played to qualify.
+              </p>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Recent Performers */}
+      <div className="p-6 rounded-lg" style={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}>
+        <h3 className="text-lg font-semibold mb-2" style={{ color: '#f8fafc' }}>
+          🔥 Recent Performers
+        </h3>
+        <p className="text-sm mb-4" style={{ color: '#94a3b8' }}>
+          Top 3 players based on win rate in their last 10 games (minimum {minimumGamesRequired} total games)
         </p>
+        {(() => {
+          type RecentPerformer = Player & {
+            recentGamesPlayed: number;
+            recentWins: number;
+            recentWinPercentage: number;
+          };
+
+          const recentPerformers: RecentPerformer[] = players
+            .filter(player => player.games_played >= minimumGamesRequired && player.games_played > 0)
+            .map(player => {
+              const playerGames = games.filter(game =>
+                game.team1_player_names.includes(player.name) ||
+                game.team2_player_names.includes(player.name)
+              ).slice(0, 10);
+
+              if (playerGames.length === 0) return null;
+
+              const recentWins = playerGames.filter(game => {
+                const isOnTeam1 = game.team1_player_names.includes(player.name);
+                return (isOnTeam1 && game.winner_team === 1) || (!isOnTeam1 && game.winner_team === 2);
+              }).length;
+
+              return {
+                ...player,
+                recentGamesPlayed: playerGames.length,
+                recentWins: recentWins,
+                recentWinPercentage: (recentWins / playerGames.length) * 100
+              } as RecentPerformer;
+            })
+            .filter((p): p is RecentPerformer => p !== null)
+            .sort((a, b) => b.recentWinPercentage - a.recentWinPercentage)
+            .slice(0, 3);
+
+          const rankStyles = [
+            { bg: 'rgba(234, 179, 8, 0.1)', border: 'rgba(234, 179, 8, 0.3)', iconBg: '#eab308', badgeBg: 'rgba(234, 179, 8, 0.15)', badgeColor: '#fde047' },
+            { bg: 'rgba(148, 163, 184, 0.1)', border: 'rgba(148, 163, 184, 0.3)', iconBg: '#64748b', badgeBg: 'rgba(148, 163, 184, 0.15)', badgeColor: '#cbd5e1' },
+            { bg: 'rgba(249, 115, 22, 0.1)', border: 'rgba(249, 115, 22, 0.3)', iconBg: '#f97316', badgeBg: 'rgba(249, 115, 22, 0.15)', badgeColor: '#fdba74' }
+          ];
+
+          return recentPerformers.length > 0 ? (
+            <div className="space-y-3">
+              {recentPerformers.map((player, index) => {
+                const style = rankStyles[index] || rankStyles[2];
+                const rankEmojis = ['🔥', '⚡', '💪'];
+                return (
+                  <div key={player.id} className="flex items-center p-3 rounded-lg" style={{ backgroundColor: style.bg, border: `1px solid ${style.border}` }}>
+                    <div className="flex-shrink-0 mr-3">
+                      <span className="text-2xl">{rankEmojis[index]}</span>
+                    </div>
+                    <div className="flex-shrink-0">
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: style.iconBg }}>
+                        <span className="font-bold text-lg" style={{ color: '#f8fafc' }}>
+                          {player.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="ml-3 flex-1">
+                      <p className="text-sm font-medium" style={{ color: '#f1f5f9' }}>{player.name}</p>
+                      <p className="text-sm" style={{ color: '#94a3b8' }}>
+                        {player.recentWins}/{player.recentGamesPlayed} in last {player.recentGamesPlayed} games
+                      </p>
+                    </div>
+                    <div className="flex-shrink-0">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: style.badgeBg, color: style.badgeColor }}>
+                        {Math.round(player.recentWinPercentage)}%
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-center py-4" style={{ color: '#94a3b8' }}>
+              No recent performers yet. Players need at least {minimumGamesRequired} total games to qualify.
+            </p>
+          );
+        })()}
       </div>
 
       {/* Recent Games */}
@@ -281,241 +599,6 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
             No rivalry games found
           </div>
         )}
-      </div>
-
-      {/* Win Rate Leaders */}
-      <div className="p-6 rounded-lg" style={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}>
-        {/* Header row with toggle */}
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-lg font-semibold" style={{ color: '#f8fafc' }}>
-            👑 Win Rate Leaders
-          </h3>
-          <div className="flex rounded-lg p-0.5" style={{ backgroundColor: '#0f172a', border: '1px solid #334155' }}>
-            <button
-              onClick={() => setWinRateView('season')}
-              style={{
-                padding: '0.25rem 0.75rem',
-                borderRadius: '0.375rem',
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                backgroundColor: winRateView === 'season' ? '#f43f5e' : 'transparent',
-                color: winRateView === 'season' ? '#f8fafc' : '#94a3b8',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              2026 Season
-            </button>
-            <button
-              onClick={() => setWinRateView('alltime')}
-              style={{
-                padding: '0.25rem 0.75rem',
-                borderRadius: '0.375rem',
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                backgroundColor: winRateView === 'alltime' ? '#f43f5e' : 'transparent',
-                color: winRateView === 'alltime' ? '#f8fafc' : '#94a3b8',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              All Time
-            </button>
-          </div>
-        </div>
-
-        {winRateView === 'season' ? (
-          <>
-            <p className="text-sm mb-4" style={{ color: '#94a3b8' }}>
-              2026 season — min {season2026MinGames} game{season2026MinGames !== 1 ? 's' : ''} required ({season2026TotalGames > 0 ? Math.round((season2026MinGames / season2026TotalGames) * 100) : 33}% participation)
-            </p>
-            {seasonLeaderboardLoading ? (
-              <div className="text-center py-4" style={{ color: '#94a3b8' }}>Loading...</div>
-            ) : qualifiedSeasonPlayers.length > 0 ? (
-              <div className="space-y-3">
-                {qualifiedSeasonPlayers.map((player, index) => {
-                  const rankStyles = [
-                    { bg: 'rgba(234, 179, 8, 0.1)', border: 'rgba(234, 179, 8, 0.3)', badgeBg: 'rgba(234, 179, 8, 0.15)', badgeColor: '#fde047' },
-                    { bg: 'rgba(148, 163, 184, 0.1)', border: 'rgba(148, 163, 184, 0.3)', badgeBg: 'rgba(148, 163, 184, 0.15)', badgeColor: '#cbd5e1' },
-                    { bg: 'rgba(249, 115, 22, 0.1)', border: 'rgba(249, 115, 22, 0.3)', badgeBg: 'rgba(249, 115, 22, 0.15)', badgeColor: '#fdba74' },
-                  ];
-                  const defaultStyle = { bg: '#0f172a', border: '#334155', badgeBg: 'rgba(59, 130, 246, 0.15)', badgeColor: '#60a5fa' };
-                  const style = index < 3 ? rankStyles[index] : defaultStyle;
-                  const rankEmojis = ['🥇', '🥈', '🥉'];
-                  return (
-                    <div key={player.id} className="flex items-center p-3 rounded-lg" style={{ backgroundColor: style.bg, border: `1px solid ${style.border}` }}>
-                      <div className="flex-shrink-0 mr-3 w-10 flex items-center justify-center">
-                        {index < 3 ? (
-                          <span className="text-2xl">{rankEmojis[index]}</span>
-                        ) : (
-                          <span className="text-xl font-bold" style={{ color: '#cbd5e1' }}>{index + 1}</span>
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium" style={{ color: '#f1f5f9' }}>{player.name}</p>
-                        <p className="text-sm" style={{ color: '#94a3b8' }}>
-                          {player.games_won}/{player.games_played} games ({season2026TotalGames > 0 ? Math.round((player.games_played / season2026TotalGames) * 100) : 0}% participation)
-                        </p>
-                      </div>
-                      <div className="flex-shrink-0">
-                        <span className="inline-flex items-center px-2 py-1 rounded-full font-medium" style={{ backgroundColor: style.badgeBg, color: style.badgeColor }}>
-                          {Math.round(player.win_percentage)}%
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="text-center py-4" style={{ color: '#94a3b8' }}>
-                {season2026TotalGames === 0
-                  ? 'No 2026 season games yet.'
-                  : `No qualified players yet. Need at least ${season2026MinGames} game${season2026MinGames !== 1 ? 's' : ''} to qualify.`}
-              </p>
-            )}
-          </>
-        ) : (
-          <>
-            <p className="text-sm mb-4" style={{ color: '#94a3b8' }}>
-              All time — min {minimumGamesRequired} games required ({Math.round((minimumGamesRequired / totalGames) * 100)}% participation)
-            </p>
-            {qualifiedPlayers.length > 0 ? (
-              <div className="space-y-3">
-                {qualifiedPlayers.map((player, index) => {
-                  const rankStyles = [
-                    { bg: 'rgba(234, 179, 8, 0.1)', border: 'rgba(234, 179, 8, 0.3)', badgeBg: 'rgba(234, 179, 8, 0.15)', badgeColor: '#fde047' },
-                    { bg: 'rgba(148, 163, 184, 0.1)', border: 'rgba(148, 163, 184, 0.3)', badgeBg: 'rgba(148, 163, 184, 0.15)', badgeColor: '#cbd5e1' },
-                    { bg: 'rgba(249, 115, 22, 0.1)', border: 'rgba(249, 115, 22, 0.3)', badgeBg: 'rgba(249, 115, 22, 0.15)', badgeColor: '#fdba74' },
-                  ];
-                  const defaultStyle = { bg: '#0f172a', border: '#334155', badgeBg: 'rgba(59, 130, 246, 0.15)', badgeColor: '#60a5fa' };
-                  const style = index < 3 ? rankStyles[index] : defaultStyle;
-                  const rankEmojis = ['🥇', '🥈', '🥉'];
-                  return (
-                    <div key={player.id} className="flex items-center p-3 rounded-lg" style={{ backgroundColor: style.bg, border: `1px solid ${style.border}` }}>
-                      <div className="flex-shrink-0 mr-3 w-10 flex items-center justify-center">
-                        {index < 3 ? (
-                          <span className="text-2xl">{rankEmojis[index]}</span>
-                        ) : (
-                          <span className="text-xl font-bold" style={{ color: '#cbd5e1' }}>{index + 1}</span>
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium" style={{ color: '#f1f5f9' }}>{player.name}</p>
-                        <p className="text-sm" style={{ color: '#94a3b8' }}>
-                          {player.games_won}/{player.games_played} games ({Math.round((player.games_played / totalGames) * 100)}% participation)
-                        </p>
-                      </div>
-                      <div className="flex-shrink-0">
-                        <span className="inline-flex items-center px-2 py-1 rounded-full font-medium" style={{ backgroundColor: style.badgeBg, color: style.badgeColor }}>
-                          {player.win_percentage > 1 ? Math.round(player.win_percentage) : Math.round(player.win_percentage * 100)}%
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="text-center py-4" style={{ color: '#94a3b8' }}>
-                No qualified players yet. Players need at least {minimumGamesRequired} games played to qualify.
-              </p>
-            )}
-          </>
-        )}
-      </div>
-
-      {/* Recent Performers */}
-      <div className="p-6 rounded-lg" style={{ backgroundColor: '#1e293b', border: '1px solid #334155' }}>
-        <h3 className="text-lg font-semibold mb-2" style={{ color: '#f8fafc' }}>
-          🔥 Recent Performers
-        </h3>
-        <p className="text-sm mb-4" style={{ color: '#94a3b8' }}>
-          Top 3 players based on win rate in their last 10 games (minimum {minimumGamesRequired} total games)
-        </p>
-        {(() => {
-          // Calculate recent performance for qualified players
-          type RecentPerformer = Player & {
-            recentGamesPlayed: number;
-            recentWins: number;
-            recentWinPercentage: number;
-          };
-
-          const recentPerformers: RecentPerformer[] = players
-            .filter(player => player.games_played >= minimumGamesRequired && player.games_played > 0)
-            .map(player => {
-              // Get last 10 games for this player
-              const playerGames = games.filter(game =>
-                game.team1_player_names.includes(player.name) ||
-                game.team2_player_names.includes(player.name)
-              ).slice(0, 10); // Take most recent 10 games
-
-              if (playerGames.length === 0) return null;
-
-              // Calculate wins in recent games
-              const recentWins = playerGames.filter(game => {
-                const isOnTeam1 = game.team1_player_names.includes(player.name);
-                return (isOnTeam1 && game.winner_team === 1) || (!isOnTeam1 && game.winner_team === 2);
-              }).length;
-
-              return {
-                ...player,
-                recentGamesPlayed: playerGames.length,
-                recentWins: recentWins,
-                recentWinPercentage: (recentWins / playerGames.length) * 100
-              } as RecentPerformer;
-            })
-            .filter((p): p is RecentPerformer => p !== null)
-            .sort((a, b) => b.recentWinPercentage - a.recentWinPercentage)
-            .slice(0, 3);
-
-          const rankStyles = [
-            { bg: 'rgba(234, 179, 8, 0.1)', border: 'rgba(234, 179, 8, 0.3)', iconBg: '#eab308', badgeBg: 'rgba(234, 179, 8, 0.15)', badgeColor: '#fde047' },
-            { bg: 'rgba(148, 163, 184, 0.1)', border: 'rgba(148, 163, 184, 0.3)', iconBg: '#64748b', badgeBg: 'rgba(148, 163, 184, 0.15)', badgeColor: '#cbd5e1' },
-            { bg: 'rgba(249, 115, 22, 0.1)', border: 'rgba(249, 115, 22, 0.3)', iconBg: '#f97316', badgeBg: 'rgba(249, 115, 22, 0.15)', badgeColor: '#fdba74' }
-          ];
-
-          return recentPerformers.length > 0 ? (
-            <div className="space-y-3">
-              {recentPerformers.map((player, index) => {
-                const style = rankStyles[index] || rankStyles[2];
-                const rankEmojis = ['🔥', '⚡', '💪'];
-
-                return (
-                  <div key={player.id} className="flex items-center p-3 rounded-lg" style={{ backgroundColor: style.bg, border: `1px solid ${style.border}` }}>
-                    <div className="flex-shrink-0 mr-3">
-                      <span className="text-2xl">{rankEmojis[index]}</span>
-                    </div>
-                    <div className="flex-shrink-0">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: style.iconBg }}>
-                        <span className="font-bold text-lg" style={{ color: '#f8fafc' }}>
-                          {player.name.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="ml-3 flex-1">
-                      <p className="text-sm font-medium" style={{ color: '#f1f5f9' }}>{player.name}</p>
-                      <p className="text-sm" style={{ color: '#94a3b8' }}>
-                        {player.recentWins}/{player.recentGamesPlayed} in last {player.recentGamesPlayed} games
-                      </p>
-                    </div>
-                    <div className="flex-shrink-0">
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: style.badgeBg, color: style.badgeColor }}>
-                        {Math.round(player.recentWinPercentage)}%
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <p className="text-center py-4" style={{ color: '#94a3b8' }}>
-              No recent performers yet. Players need at least {minimumGamesRequired} total games to qualify.
-            </p>
-          );
-        })()}
       </div>
 
       {/* Games Played Bar Chart */}
