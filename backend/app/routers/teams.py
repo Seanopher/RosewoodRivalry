@@ -1,3 +1,5 @@
+import re
+import math
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, extract
@@ -6,7 +8,14 @@ from app.schemas.schemas import TeamOut, TeamStats, GameSummary, TeamsListRespon
 from app.models import Team, Game, GameParticipation, Player
 from app.database import get_db
 from app.services.team_service import rebuild_all_teams
-import math
+
+_VALID_SEASON = re.compile(r'^\d{4}$')
+
+
+def _validate_season(season: Optional[str]):
+    """Raise 422 if season is not a 4-digit year or 'all'."""
+    if season and season != 'all' and not _VALID_SEASON.match(season):
+        raise HTTPException(status_code=422, detail="Invalid season value.")
 
 router = APIRouter(prefix="/teams", tags=["teams"])
 
@@ -80,6 +89,7 @@ def list_teams(
     db: Session = Depends(get_db),
 ):
     """Get teams, optionally filtered by season."""
+    _validate_season(season)
     all_teams = db.query(Team).all()
     total_games = db.query(Game).count()
 
@@ -152,6 +162,7 @@ def get_team_stats(
     db: Session = Depends(get_db),
 ):
     """Get detailed statistics for a specific team, optionally filtered by season."""
+    _validate_season(season)
     team = db.get(Team, team_id)
     if not team:
         raise HTTPException(status_code=404, detail="Team not found")

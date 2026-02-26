@@ -1,3 +1,4 @@
+import re
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import extract
@@ -5,6 +6,14 @@ from typing import List, Optional
 from app.schemas.schemas import PlayerCreate, PlayerOut, PlayerStats, GameSummary
 from app.models import Player, Game, GameParticipation
 from app.database import get_db
+
+_VALID_SEASON = re.compile(r'^\d{4}$')
+
+
+def _validate_season(season: Optional[str]):
+    """Raise 422 if season is not a 4-digit year or 'all'."""
+    if season and season != 'all' and not _VALID_SEASON.match(season):
+        raise HTTPException(status_code=422, detail="Invalid season value.")
 
 router = APIRouter(prefix="/players", tags=["players"])
 
@@ -86,6 +95,7 @@ def get_leaderboard(
     db: Session = Depends(get_db),
 ):
     """Get all players ranked by win percentage, optionally filtered by season."""
+    _validate_season(season)
     players = db.query(Player).all()
     results = []
 
@@ -133,6 +143,7 @@ def get_player_stats(
     season: Optional[str] = Query(None, description="Filter by season year (e.g. '2025', '2026') or 'all'"),
     db: Session = Depends(get_db),
 ):
+    _validate_season(season)
     player = db.get(Player, player_id)
     if not player:
         raise HTTPException(status_code=404, detail="Player not found")

@@ -19,12 +19,6 @@ const getApiBaseUrl = () => {
 
 const API_BASE_URL = getApiBaseUrl();
 
-console.log('API Configuration:', {
-  hostname: window.location.hostname,
-  protocol: window.location.protocol,
-  API_BASE_URL
-});
-
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -49,67 +43,30 @@ const RETRY_CONFIG = {
   }
 };
 
-// Add request interceptor for debugging
+// Request interceptor
 api.interceptors.request.use(
-  (config) => {
-    console.log('API Request:', {
-      url: config.url,
-      method: config.method,
-      baseURL: config.baseURL,
-      fullURL: `${config.baseURL}${config.url}`
-    });
-    return config;
-  },
-  (error) => {
-    console.error('API Request Error:', error);
-    return Promise.reject(error);
-  }
+  (config) => config,
+  (error) => Promise.reject(error)
 );
 
 // Retry helper function
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Add response interceptor with retry logic
+// Response interceptor with retry logic
 api.interceptors.response.use(
-  (response) => {
-    console.log('API Response Success:', {
-      url: response.config.url,
-      status: response.status,
-      data: response.data
-    });
-    return response;
-  },
+  (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // Check if this is a retryable error and we haven't exceeded max retries
     if (RETRY_CONFIG.retryCondition(error) && !originalRequest._retry) {
       originalRequest._retry = true;
       originalRequest._retryCount = (originalRequest._retryCount || 0) + 1;
 
       if (originalRequest._retryCount <= RETRY_CONFIG.maxRetries) {
-        console.warn(`API Request failed, retrying (${originalRequest._retryCount}/${RETRY_CONFIG.maxRetries})...`, {
-          url: originalRequest.url,
-          error: error.message,
-          retryAfter: RETRY_CONFIG.retryDelay
-        });
-
-        // Wait before retrying
         await sleep(RETRY_CONFIG.retryDelay);
-
-        // Retry the request
         return api(originalRequest);
       }
     }
-
-    console.error('API Response Error (final):', {
-      url: error.config?.url,
-      status: error.response?.status,
-      message: error.message,
-      responseData: error.response?.data,
-      code: error.code,
-      retries: originalRequest._retryCount || 0
-    });
 
     return Promise.reject(error);
   }

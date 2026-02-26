@@ -25,8 +25,8 @@ def search_golf_courses(q: str = Query(..., min_length=2)):
     """Search GolfCourseAPI for courses."""
     try:
         results = search_courses(q)
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Golf course API error: {str(e)}")
+    except Exception:
+        raise HTTPException(status_code=502, detail="Golf course service unavailable.")
 
     out = []
     for c in results:
@@ -47,8 +47,8 @@ def get_course(api_id: int, db: Session = Depends(get_db)):
     """Get or cache a course by its GolfCourseAPI id."""
     try:
         course = get_or_cache_course(api_id, db)
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Golf course API error: {str(e)}")
+    except Exception:
+        raise HTTPException(status_code=502, detail="Golf course service unavailable.")
 
     tees_out = []
     for tee in course.tees:
