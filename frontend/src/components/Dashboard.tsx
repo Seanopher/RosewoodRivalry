@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Player, GameSummary, RivalryStats, PlayerStats } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { rivalryAPI, playerAPI } from '../services/api';
+import { parseUTC } from '../utils/dates';
 
 interface DashboardProps {
   players: Player[];
@@ -50,7 +51,7 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
   const thisWeeksGames = games.filter(game =>
-    new Date(game.played_at) >= oneWeekAgo
+    parseUTC(game.played_at) >= oneWeekAgo
   );
 
   // Calculate weekly stats
@@ -75,7 +76,7 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
     .sort((a, b) => b.win_percentage - a.win_percentage);
 
   // Season (2026) totals and qualified players
-  const season2026TotalGames = games.filter(g => new Date(g.played_at).getFullYear() === 2026).length;
+  const season2026TotalGames = games.filter(g => parseUTC(g.played_at).getFullYear() === 2026).length;
   const season2026MinGames = Math.ceil(season2026TotalGames * 0.333);
   const qualifiedSeasonPlayers = seasonLeaderboard.filter(p => p.games_played >= season2026MinGames);
 
@@ -111,7 +112,7 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
               <div key={game.id} className="rounded-lg p-4 transition-colors" style={{ border: '1px solid #334155', backgroundColor: '#0f172a' }}>
                 <div className="flex items-center justify-between mb-2">
                   <div className="text-sm" style={{ color: '#94a3b8' }}>
-                    Game #{game.id} • {new Date(game.played_at).toLocaleDateString('en-US', {
+                    Game #{game.id} • {parseUTC(game.played_at).toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',
                       hour: '2-digit',
@@ -254,7 +255,7 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
                     <div key={game.id} className="flex items-center justify-between p-3 rounded" style={{ backgroundColor: '#0f172a', border: '1px solid #334155' }}>
                       <div className="flex items-center space-x-4">
                         <div className="text-sm" style={{ color: '#94a3b8' }}>
-                          {new Date(game.played_at).toLocaleDateString('en-US', {
+                          {parseUTC(game.played_at).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric'
                           })}
@@ -612,7 +613,7 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games }) => {
           {thisWeeksGames.length > 0 && (
             <div className="pt-2" style={{ borderTop: '1px solid #334155' }}>
               <p className="text-sm" style={{ color: '#94a3b8' }}>
-                Most Recent: {new Date(thisWeeksGames[0].played_at).toLocaleDateString()}
+                Most Recent: {parseUTC(thisWeeksGames[0].played_at).toLocaleDateString()}
               </p>
             </div>
           )}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Player, GolfPlayerStats, GolfParTypeStat, GolfRoundSummary } from '../types';
 import { golfAPI } from '../services/api';
+import { parseUTC } from '../utils/dates';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface GolfStatsProps {
@@ -58,7 +59,7 @@ const GolfStats: React.FC<GolfStatsProps> = ({ players }) => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return parseUTC(dateString).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
     });

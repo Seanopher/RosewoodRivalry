@@ -1,5 +1,6 @@
 import React from 'react';
 import { GameSummary } from '../types';
+import { parseUTC } from '../utils/dates';
 
 interface GameHistoryProps {
   games: GameSummary[];
@@ -8,7 +9,7 @@ interface GameHistoryProps {
 
 const GameHistory: React.FC<GameHistoryProps> = ({ games, onEditGame }) => {
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return parseUTC(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',

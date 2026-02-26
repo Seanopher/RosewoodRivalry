@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Player, GolfRoundSummary, GolfPlayerStats, GolfRound, GolfHoleResult } from '../types';
 import { golfAPI } from '../services/api';
+import { parseUTC } from '../utils/dates';
 
 interface GolfDashboardProps {
   players: Player[];
@@ -131,7 +132,7 @@ const GolfDashboard: React.FC<GolfDashboardProps> = ({ players, golfRounds }) =>
   // Recent rounds (last 7 days)
   const oneWeekAgo = new Date();
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-  const recentRounds = golfRounds.filter(r => new Date(r.played_at) >= oneWeekAgo);
+  const recentRounds = golfRounds.filter(r => parseUTC(r.played_at) >= oneWeekAgo);
 
   return (
     <div className="space-y-6 animate-fadeIn">
@@ -159,7 +160,7 @@ const GolfDashboard: React.FC<GolfDashboardProps> = ({ players, golfRounds }) =>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.625rem' }}>
                       <div>
                         <div className="text-xs" style={{ color: '#64748b' }}>
-                          {new Date(round.played_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          {parseUTC(round.played_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         </div>
                         <div className="text-sm font-semibold" style={{ color: '#e2e8f0' }}>{round.course}</div>
                       </div>

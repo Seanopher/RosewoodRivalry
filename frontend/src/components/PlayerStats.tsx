@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Player, PlayerStats as PlayerStatsType, Season } from '../types';
 import { playerAPI } from '../services/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { parseUTC } from '../utils/dates';
 
 interface PlayerStatsProps {
   players: Player[];
@@ -67,7 +68,7 @@ const PlayerStats: React.FC<PlayerStatsProps> = ({
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return parseUTC(dateString).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
     });

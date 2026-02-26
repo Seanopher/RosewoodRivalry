@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Team, TeamStats as TeamStatsType, Season } from '../types';
 import { teamAPI } from '../services/api';
+import { parseUTC } from '../utils/dates';
 
 interface TeamStatsProps {
   teams: Team[];
@@ -39,7 +40,7 @@ const TeamStats: React.FC<TeamStatsProps> = ({ teams, onTeamSelect, teamThreshol
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return parseUTC(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',

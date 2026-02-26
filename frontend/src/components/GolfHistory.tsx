@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { GolfRoundSummary, GolfRound, GolfHoleResult } from '../types';
 import { golfAPI } from '../services/api';
+import { parseUTC } from '../utils/dates';
 
 interface GolfHistoryProps {
   rounds: GolfRoundSummary[];
@@ -33,7 +34,7 @@ const GolfHistory: React.FC<GolfHistoryProps> = ({ rounds, onEditRound }) => {
   const [loadingDetail, setLoadingDetail] = useState(false);
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return parseUTC(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
