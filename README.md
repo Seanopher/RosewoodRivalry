@@ -1,6 +1,10 @@
 # Rosewood Rivalry
 
-A full-stack sports tracking app built for a private friend group to record and analyze competitive game results across two sports: **Dice** and **Golf**.
+A full-stack sports tracking app built for University of South Carolina students to record and analyze competitive game results across multiple sports!
+
+## Available sports:
+- **Dice** — 3v3
+- **Golf** — 2v2
 
 ## Features
 
@@ -14,9 +18,9 @@ A full-stack sports tracking app built for a private friend group to record and 
 
 ## Tech Stack
 
-**Frontend** — React, TypeScript, Tailwind CSS
-**Backend** — FastAPI, SQLAlchemy, PostgreSQL
-**Deployment** — Render (backend + static frontend), NeonDB
+- **Frontend** — React, TypeScript, Tailwind CSS
+- **Backend** — FastAPI, SQLAlchemy, PostgreSQL
+- **Deployment** — Render (backend + static frontend), NeonDB
 
 ## Project Structure
 
