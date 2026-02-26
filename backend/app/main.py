@@ -1,10 +1,15 @@
 import os
+import logging
 from sqlalchemy import text
-from fastapi import FastAPI
+from sqlalchemy.exc import OperationalError, SQLAlchemyError
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from app.routers import players, games, teams, rivalry, golf
 from app.database import engine, Base
 from app import models
+
+logger = logging.getLogger("rosewood")
 
 # Create database tables (creates new tables, but won't add columns to existing ones)
 Base.metadata.create_all(bind=engine)
@@ -57,6 +62,19 @@ except Exception as e:
     print(f"Migration warning (non-fatal): {e}")
 
 app = FastAPI(title="Rosewood Rivalry API")
+
+
+@app.exception_handler(OperationalError)
+async def db_operational_error_handler(request: Request, exc: OperationalError):
+    logger.error("[DB_CONNECTION_ERROR] %s %s — %s", request.method, request.url.path, exc)
+    return JSONResponse(status_code=503, content={"detail": "Database unavailable. Please try again."})
+
+
+@app.exception_handler(SQLAlchemyError)
+async def db_generic_error_handler(request: Request, exc: SQLAlchemyError):
+    logger.error("[DB_ERROR] %s %s — %s", request.method, request.url.path, exc)
+    return JSONResponse(status_code=503, content={"detail": "Database error. Please try again."})
+
 
 # CORS origins based on environment
 origins = [
