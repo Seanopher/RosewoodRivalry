@@ -107,6 +107,7 @@ function App() {
   };
 
   const handleEnter = (player: Player | null) => {
+    window.scrollTo(0, 0);
     if (player === null) {
       localStorage.setItem(LS_KEY, 'guest');
       setCurrentUser('guest');
