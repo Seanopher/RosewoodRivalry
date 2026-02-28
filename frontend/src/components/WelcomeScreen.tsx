@@ -77,24 +77,26 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ players, onEnter }) => {
         maxWidth: '26rem',
         animation: 'slideUp 0.5s ease 0.12s both',
       }}>
-        <p style={{
-          color: '#475569',
-          fontSize: '0.7rem',
-          fontWeight: 700,
-          letterSpacing: '0.1em',
-          textTransform: 'uppercase',
-          textAlign: 'center',
-          marginBottom: '1rem',
-        }}>
-          Who are you?
-        </p>
+        {/* Guest option at top */}
+        <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
+          <p style={{ color: '#475569', fontSize: '0.8rem', fontWeight: 500, margin: '0.625rem 0 0.625rem' }}>
+            NOT A PLAYER?
+          </p>
+          <GuestButton onEnter={onEnter} />
+        </div>
+
+        {/* Divider */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+          <div style={{ flex: 1, height: '1px', backgroundColor: '#1e293b' }} />
+          <span style={{ color: '#334155', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>select your name</span>
+          <div style={{ flex: 1, height: '1px', backgroundColor: '#1e293b' }} />
+        </div>
 
         {/* Player grid */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(2, 1fr)',
           gap: '0.625rem',
-          marginBottom: '0.75rem',
         }}>
           {[...players]
             .sort((a, b) => b.games_played - a.games_played)
@@ -102,9 +104,6 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ players, onEnter }) => {
               <PlayerCard key={player.id} player={player} onSelect={onEnter} />
             ))}
         </div>
-
-        {/* Guest option */}
-        <GuestButton onEnter={onEnter} />
       </div>
     </div>
   );
@@ -200,7 +199,6 @@ const GuestButton: React.FC<{ onEnter: (p: null) => void }> = ({ onEnter }) => {
         cursor: 'pointer',
         transition: 'all 0.15s ease',
         textAlign: 'center',
-        marginTop: '0.625rem',
         letterSpacing: '0.01em',
       }}
     >

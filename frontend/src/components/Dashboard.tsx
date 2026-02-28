@@ -109,6 +109,12 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games, currentUser }) =>
 
   const losses = playerData ? playerData.games_played - playerData.games_won : 0;
 
+  // Hero card derived values
+  const allTimePtDiff = playerData ? playerData.total_points_scored - playerData.total_points_against : 0;
+  const allTimeRank = playerData ? qualifiedPlayers.findIndex(p => p.id === playerData.id) : -1;
+  const mySeasonStats = playerData ? (seasonLeaderboard.find(p => p.id === playerData.id) ?? null) : null;
+  const seasonRank = (playerData && mySeasonStats) ? qualifiedSeasonPlayers.findIndex(p => p.id === playerData.id) : -1;
+
   return (
     <div className="space-y-6 animate-fadeIn">
 
@@ -127,19 +133,147 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games, currentUser }) =>
             </div>
           </div>
 
-          {/* Stat row */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', borderBottom: '1px solid #334155' }}>
-            {[
-              { label: 'Win Rate', value: `${Math.round(playerData.win_percentage)}%`, color: '#f43f5e' },
-              { label: 'Wins', value: playerData.games_won, color: '#22c55e' },
-              { label: 'Losses', value: losses, color: '#ef4444' },
-            ].map((stat, i) => (
-              <div key={i} style={{ padding: '1rem', textAlign: 'center', borderRight: i < 2 ? '1px solid #334155' : 'none' }}>
-                <div style={{ fontSize: '1.625rem', fontWeight: 800, color: stat.color, lineHeight: 1 }}>{stat.value}</div>
-                <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '0.3rem' }}>{stat.label}</div>
-              </div>
-            ))}
+          {/* ── All Time row ── */}
+          <div style={{ padding: '0.6rem 1.25rem 0', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <span style={{ fontSize: '0.6rem', fontWeight: 700, color: '#f43f5e', letterSpacing: '0.12em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>All Time</span>
+            <div style={{ flex: 1, height: '1px', backgroundColor: '#334155' }} />
           </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', borderBottom: '1px solid #334155' }}>
+            {/* Win Rate */}
+            <div style={{ padding: '0.75rem 0.5rem', textAlign: 'center', borderRight: '1px solid #334155' }}>
+              <div style={{ fontSize: '1.375rem', fontWeight: 800, color: '#f43f5e', lineHeight: 1 }}>{Math.round(playerData.win_percentage)}%</div>
+              <div style={{ fontSize: '0.6rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '0.2rem' }}>Win Rate</div>
+              <div style={{ fontSize: '0.7rem', marginTop: '0.3rem' }}>
+                <span style={{ color: '#22c55e', fontWeight: 700 }}>{playerData.games_won}W</span>
+                <span style={{ color: '#475569' }}> / </span>
+                <span style={{ color: '#ef4444', fontWeight: 700 }}>{losses}L</span>
+              </div>
+            </div>
+            {/* Point Differential */}
+            <div style={{ padding: '0.75rem 0.5rem', textAlign: 'center', borderRight: '1px solid #334155' }}>
+              <div style={{ fontSize: '1.375rem', fontWeight: 800, color: allTimePtDiff >= 0 ? '#22c55e' : '#ef4444', lineHeight: 1 }}>
+                {allTimePtDiff >= 0 ? '+' : ''}{allTimePtDiff}
+              </div>
+              <div style={{ fontSize: '0.6rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '0.2rem' }}>Pt Differential</div>
+              <div style={{ fontSize: '0.65rem', marginTop: '0.3rem', color: '#64748b' }}>
+                {playerData.games_won > 0 ? `+${playerData.avg_win_margin.toFixed(1)}` : '—'}
+                {' / '}
+                {losses > 0 ? `-${playerData.avg_loss_margin.toFixed(1)}` : '—'}
+              </div>
+            </div>
+            {/* All-Time Ranking */}
+            <div style={{ padding: '0.75rem 0.5rem', textAlign: 'center' }}>
+              {allTimeRank >= 0 ? (
+                <>
+                  <div style={{ fontSize: '1.375rem', fontWeight: 800, lineHeight: 1, color: allTimeRank === 0 ? '#fde047' : allTimeRank === 1 ? '#cbd5e1' : allTimeRank === 2 ? '#fdba74' : '#f1f5f9' }}>
+                    #{allTimeRank + 1}
+                  </div>
+                  <div style={{ fontSize: '0.6rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '0.2rem' }}>Ranking</div>
+                  <div style={{ fontSize: '0.65rem', marginTop: '0.3rem', color: '#22c55e' }}>qualified</div>
+                </>
+              ) : (
+                <>
+                  <div style={{ fontSize: '1.375rem', fontWeight: 800, color: '#475569', lineHeight: 1 }}>—</div>
+                  <div style={{ fontSize: '0.6rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '0.2rem' }}>Ranking</div>
+                  <div style={{ fontSize: '0.65rem', marginTop: '0.3rem', color: '#475569' }}>
+                    {playerData.games_played > 0
+                      ? `${Math.max(0, minimumGamesRequired - playerData.games_played)} more to qualify`
+                      : 'No games yet'}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* ── 2026 Season row ── */}
+          <div style={{ padding: '0.6rem 1.25rem 0', display: 'flex', alignItems: 'center', gap: '0.75rem', backgroundColor: 'rgba(244,63,94,0.025)' }}>
+            <span style={{ fontSize: '0.6rem', fontWeight: 700, color: '#f43f5e', letterSpacing: '0.12em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>2026 Season</span>
+            <div style={{ flex: 1, height: '1px', backgroundColor: '#334155' }} />
+          </div>
+          {seasonLeaderboardLoading ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', borderBottom: '1px solid #334155', backgroundColor: 'rgba(244,63,94,0.02)' }}>
+              {[0, 1, 2].map(i => (
+                <div key={i} style={{ padding: '0.75rem 0.5rem', textAlign: 'center', borderRight: i < 2 ? '1px solid #334155' : 'none' }}>
+                  <div style={{ height: '1.375rem', backgroundColor: '#334155', borderRadius: '0.25rem', margin: '0 auto', width: '55%' }} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', borderBottom: '1px solid #334155', backgroundColor: 'rgba(244,63,94,0.02)' }}>
+              {/* Season Win Rate */}
+              <div style={{ padding: '0.75rem 0.5rem', textAlign: 'center', borderRight: '1px solid #334155' }}>
+                {mySeasonStats ? (
+                  <>
+                    <div style={{ fontSize: '1.375rem', fontWeight: 800, color: '#f43f5e', lineHeight: 1 }}>{Math.round(mySeasonStats.win_percentage)}%</div>
+                    <div style={{ fontSize: '0.6rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '0.2rem' }}>Win Rate</div>
+                    <div style={{ fontSize: '0.7rem', marginTop: '0.3rem' }}>
+                      <span style={{ color: '#22c55e', fontWeight: 700 }}>{mySeasonStats.games_won}W</span>
+                      <span style={{ color: '#475569' }}> / </span>
+                      <span style={{ color: '#ef4444', fontWeight: 700 }}>{mySeasonStats.games_played - mySeasonStats.games_won}L</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ fontSize: '1.375rem', fontWeight: 800, color: '#334155', lineHeight: 1 }}>—</div>
+                    <div style={{ fontSize: '0.6rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '0.2rem' }}>Win Rate</div>
+                    <div style={{ fontSize: '0.65rem', marginTop: '0.3rem', color: '#475569' }}>No 2026 games</div>
+                  </>
+                )}
+              </div>
+              {/* Season Point Differential */}
+              <div style={{ padding: '0.75rem 0.5rem', textAlign: 'center', borderRight: '1px solid #334155' }}>
+                {mySeasonStats ? (
+                  <>
+                    {(() => {
+                      const diff = mySeasonStats.total_points_scored - mySeasonStats.total_points_against;
+                      const seasonLosses = mySeasonStats.games_played - mySeasonStats.games_won;
+                      return (
+                        <>
+                          <div style={{ fontSize: '1.375rem', fontWeight: 800, color: diff >= 0 ? '#22c55e' : '#ef4444', lineHeight: 1 }}>
+                            {diff >= 0 ? '+' : ''}{diff}
+                          </div>
+                          <div style={{ fontSize: '0.6rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '0.2rem' }}>Pt Differential</div>
+                          <div style={{ fontSize: '0.65rem', marginTop: '0.3rem', color: '#64748b' }}>
+                            {mySeasonStats.games_won > 0 ? `+${mySeasonStats.avg_win_margin.toFixed(1)}` : '—'}
+                            {' / '}
+                            {seasonLosses > 0 ? `-${mySeasonStats.avg_loss_margin.toFixed(1)}` : '—'}
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </>
+                ) : (
+                  <>
+                    <div style={{ fontSize: '1.375rem', fontWeight: 800, color: '#334155', lineHeight: 1 }}>—</div>
+                    <div style={{ fontSize: '0.6rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '0.2rem' }}>Pt Differential</div>
+                    <div style={{ fontSize: '0.65rem', marginTop: '0.3rem', color: '#475569' }}>No 2026 games</div>
+                  </>
+                )}
+              </div>
+              {/* Season Ranking */}
+              <div style={{ padding: '0.75rem 0.5rem', textAlign: 'center' }}>
+                {seasonRank >= 0 ? (
+                  <>
+                    <div style={{ fontSize: '1.375rem', fontWeight: 800, lineHeight: 1, color: seasonRank === 0 ? '#fde047' : seasonRank === 1 ? '#cbd5e1' : seasonRank === 2 ? '#fdba74' : '#f1f5f9' }}>
+                      #{seasonRank + 1}
+                    </div>
+                    <div style={{ fontSize: '0.6rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '0.2rem' }}>Ranking</div>
+                    <div style={{ fontSize: '0.65rem', marginTop: '0.3rem', color: '#22c55e' }}>qualified</div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ fontSize: '1.375rem', fontWeight: 800, color: '#334155', lineHeight: 1 }}>—</div>
+                    <div style={{ fontSize: '0.6rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '0.2rem' }}>Ranking</div>
+                    <div style={{ fontSize: '0.65rem', marginTop: '0.3rem', color: '#475569' }}>
+                      {mySeasonStats
+                        ? `${Math.max(0, season2026MinGames - mySeasonStats.games_played)} more to qualify`
+                        : 'No 2026 games'}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Recent games */}
           {myRecentGames.length > 0 ? (

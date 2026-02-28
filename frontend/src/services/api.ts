@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Player, PlayerCreate, Game, GameCreate, GameUpdate, GameSummary, PlayerStats, Team, TeamStats, TeamsListResponse, RivalryStats, GolfRound, GolfRoundCreate, GolfRoundUpdate, GolfRoundSummary, GolfPlayerStats, GolfCourseSearchResult, GolfCourseOut, Season } from '../types';
+import { Player, PlayerCreate, Game, GameCreate, GameUpdate, GameSummary, PlayerStats, TeamStats, TeamsListResponse, RivalryStats, GolfRound, GolfRoundCreate, GolfRoundUpdate, GolfRoundSummary, GolfPlayerStats, GolfCourseSearchResult, GolfCourseOut, Season } from '../types';
 
 // API URL configuration for different environments
 const getApiBaseUrl = () => {

@@ -130,11 +130,6 @@ function App() {
     setDataRefreshKey(prev => prev + 1);
   };
 
-  const handlePlayerSelect = (player: Player) => {
-    setSelectedPlayer(player);
-    setActiveTab('stats');
-  };
-
   const handleEditGame = (gameId: number) => {
     setEditingGameId(gameId);
     setActiveTab('edit');
