@@ -11,8 +11,8 @@ interface GameHistoryProps {
 const GameCard: React.FC<{ game: GameSummary; onEditGame?: (id: number) => void }> = ({ game, onEditGame }) => {
   const [hovered, setHovered] = useState(false);
   const margin = Math.abs(game.team1_score - game.team2_score);
-  const isClose = margin <= 3;
-  const isBlowout = margin >= 15;
+  const isClose = margin <= 2;
+  const isBlowout = margin >= 8;
   const date = parseUTC(game.played_at);
   const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });

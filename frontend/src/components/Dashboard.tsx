@@ -155,10 +155,11 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games, currentUser }) =>
                 {allTimePtDiff >= 0 ? '+' : ''}{allTimePtDiff}
               </div>
               <div style={{ fontSize: '0.6rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '0.2rem' }}>Pt Differential</div>
-              <div style={{ fontSize: '0.65rem', marginTop: '0.3rem', color: '#64748b' }}>
-                {playerData.games_won > 0 ? `+${playerData.avg_win_margin.toFixed(1)}` : '—'}
-                {' / '}
-                {losses > 0 ? `-${playerData.avg_loss_margin.toFixed(1)}` : '—'}
+              <div style={{ fontSize: '0.62rem', marginTop: '', color: '#475569', fontWeight: 500 }}>Avg W/L Margin</div>
+              <div style={{ fontSize: '0.65rem', marginTop: '0.15rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.25rem' }}>
+                <span style={{ color: '#22c55e', fontWeight: 700 }}>{playerData.games_won > 0 ? `+${playerData.avg_win_margin.toFixed(1)}` : '—'}</span>
+                <span style={{ color: '#334155' }}>/</span>
+                <span style={{ color: '#ef4444', fontWeight: 700 }}>{losses > 0 ? `-${playerData.avg_loss_margin.toFixed(1)}` : '—'}</span>
               </div>
             </div>
             {/* All-Time Ranking */}
@@ -233,10 +234,11 @@ const Dashboard: React.FC<DashboardProps> = ({ players, games, currentUser }) =>
                             {diff >= 0 ? '+' : ''}{diff}
                           </div>
                           <div style={{ fontSize: '0.6rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '0.2rem' }}>Pt Differential</div>
-                          <div style={{ fontSize: '0.65rem', marginTop: '0.3rem', color: '#64748b' }}>
-                            {mySeasonStats.games_won > 0 ? `+${mySeasonStats.avg_win_margin.toFixed(1)}` : '—'}
-                            {' / '}
-                            {seasonLosses > 0 ? `-${mySeasonStats.avg_loss_margin.toFixed(1)}` : '—'}
+                          <div style={{ fontSize: '0.62rem', marginTop: '', color: '#475569', fontWeight: 500 }}>Avg W/L Margin</div>
+                          <div style={{ fontSize: '0.65rem', marginTop: '0.15rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.25rem' }}>
+                            <span style={{ color: '#22c55e', fontWeight: 700 }}>{mySeasonStats.games_won > 0 ? `+${mySeasonStats.avg_win_margin.toFixed(1)}` : '—'}</span>
+                            <span style={{ color: '#334155' }}>/</span>
+                            <span style={{ color: '#ef4444', fontWeight: 700 }}>{seasonLosses > 0 ? `-${mySeasonStats.avg_loss_margin.toFixed(1)}` : '—'}</span>
                           </div>
                         </>
                       );
